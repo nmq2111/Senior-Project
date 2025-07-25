@@ -68,3 +68,12 @@ A senior project for a smart university attendance and access control system usi
 - `Attendance`: course, student, date/time, method
 - `RFIDTag`: UID, assigned user
 - `AccessLog`: door, user, timestamp, method
+
+---
+
+### **_Getting Started_**
+
+used [notion](https://www.notion.so/215bf441c499808b9022d6df2553232a?v=215bf441c4998019a2fe000c0c774926&source=copy_link) to see the plan and timeline,
+and [draw io](https://drive.google.com/file/d/1sy86rwRyIB2E5yVgVwN_kJfvMwd0O80X/view?usp=sharing) to plan our ERD's and Schemas.
+
+---
