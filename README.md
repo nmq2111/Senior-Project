@@ -48,4 +48,23 @@ A senior project for a smart university attendance and access control system usi
 
 ---
 
-## 🧱 System Architecture
+## 🔌 Hardware Components
+
+- ESP32 Dev Board
+- RC522 RFID Reader + MIFARE Cards
+- 5V Relay Module
+- 12V Electric Door Lock
+- Buzzer + LEDs
+- USB to TTL (for ESP32-CAM)
+- ESP32-CAM (optional for face recognition)
+- Power adapters (5V & 12V)
+
+---
+
+## 🗃️ Database Models
+
+- `User`: roles (student, teacher, admin)
+- `Course`: name, assigned teacher
+- `Attendance`: course, student, date/time, method
+- `RFIDTag`: UID, assigned user
+- `AccessLog`: door, user, timestamp, method
