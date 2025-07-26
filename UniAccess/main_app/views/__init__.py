@@ -1,0 +1,1 @@
+from .pages_views import home

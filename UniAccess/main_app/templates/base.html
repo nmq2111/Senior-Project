@@ -1,0 +1,28 @@
+<!-- {% load static %} -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Server{% endblock %}</title>
+</head>
+<body>
+    <nav class="navbar-container">
+        <ul class="navbar-links">
+             <li><a href="{% url 'home' %}">HOME</a></li>
+        </ul>
+    </nav>
+    <main>
+        {% block content %}
+        <!-- Page-specific content goes here -->
+        {% endblock %}
+    </main>
+    <footer>
+        <div class="footer">
+            <div class="row">
+                UniAccess Copyright © 2025 UniAccess - All rights reserved 
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
