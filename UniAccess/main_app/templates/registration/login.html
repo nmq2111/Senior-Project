@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block styles %}
+
+  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+  <div class="login-wrapper">
+    <h1>Log In</h1>
+    <form method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <input type="submit" class="btn" value="login">
+      <input type="hidden" name="next" value="{{ next }}">
+    </form>
+
+    <div>
+      {% if user.is_authenticated %}
+        <a href="{% url 'password_change' %}">Change Password</a>
+      {% else %}
+        <a href="{% url 'password_reset' %}">Forgot Password?</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

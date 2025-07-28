@@ -1,1 +1,1 @@
-from .pages_views import home
+from .pages_views import home , signup

@@ -1,8 +1,10 @@
-from django.urls import path
-from main_app.views import pages_views as views
+from django.urls import path , include
+from main_app import views
 
 
 urlpatterns = [
         path('', views.home, name='home'),
+        path('accounts/signup/', views.signup , name='signup'), 
+       
 ]
 

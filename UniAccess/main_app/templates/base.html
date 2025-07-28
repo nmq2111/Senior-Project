@@ -4,12 +4,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Server{% endblock %}</title>
+    <title>{% block title %}UniAccess{% endblock %}</title>
 </head>
 <body>
     <nav class="navbar-container">
         <ul class="navbar-links">
+             {% if user.is_authenticated %}
              <li><a href="{% url 'home' %}">HOME</a></li>
+             <li>
+                    <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="navbar-link logout-btn">Log Out</button>
+                    </form>
+                </li>
+
+             {% else %}
+
+
+             <li><a href="{% url 'signup' %}">Sign Up</a></li>
+             <li><a href="{% url 'login' %}">Log In</a></li>
+             {% endif %}
         </ul>
     </nav>
     <main>
