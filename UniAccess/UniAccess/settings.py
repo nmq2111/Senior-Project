@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-AUTH_USER_MODEL = 'main_app.User'
+AUTH_USER_MODEL = 'main_app.CustomUser'
 
 from pathlib import Path
 
