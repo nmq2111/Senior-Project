@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card p-4 shadow-lg">
+    <div class="row">
+      <div class="col-md-4 text-center">
+        <img src="{{ user.profile.avatar.url }}" class="img-fluid rounded-circle mb-3" alt="Avatar" width="150" height="150">
+        
+      </div>
+      <div class="col-md-8">
+        <h3>username : {{ user.username }}</h3>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Role:</strong> {{ user.role }}</p>
+        <p><strong>Custom ID:</strong> {{ user.custom_id }}</p>
+        <p><strong>Location:</strong> {{ user.profile.location }}</p>
+        <p><strong>Phone:</strong> {{ user.profile.phone }}</p>
+        <p><strong>Bio:</strong> {{ user.profile.bio }}</p>
+        <a href="{% url 'edit_profile' %}" class="btn btn-primary mt-2">Edit Profile</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser
+from .models import CustomUser , Profile
+
 
 class CustomUserCreationForm(UserCreationForm):
     ROLE_CHOICES = [
@@ -13,3 +14,11 @@ class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = CustomUser
         fields = ('username', 'email', 'role', 'password1', 'password2')
+
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['avatar', 'bio', 'location', 'phone']
+

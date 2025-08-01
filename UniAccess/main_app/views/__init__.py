@@ -1,1 +1,1 @@
-from .pages_views import home , signup_view
+from .pages_views import home , signup_view , view_Profile , edit_profile

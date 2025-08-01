@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+from datetime import datetime  
+
 
 
 class CustomUser(AbstractUser):
@@ -17,17 +19,20 @@ class CustomUser(AbstractUser):
         is_new = self.pk is None
         super().save(*args, **kwargs)
         if is_new and not self.custom_id:
+            year = datetime.now().year
             prefix = {
                 'student': 'S',
                 'teacher': 'T',
                 'admin': 'A',
             }.get(self.role, 'X')
-            number_part = f"{self.id:08d}"
-            self.custom_id = f"{prefix}{number_part}"
+            number_part = f"{self.id:04d}"
+            self.custom_id = f"{prefix}{year}{number_part}"
             super().save(update_fields=['custom_id'])
 
     def __str__(self):
         return f"{self.username} ({self.custom_id})"
+    
+
 
 
 class Course(models.Model):
@@ -74,9 +79,11 @@ class AccessLog(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    avatar = models.ImageField(upload_to='avatars/', default='avatars/default.jpg')
+
     bio = models.TextField(blank=True)
-    avatar = models.ImageField(upload_to='static/avatars/', blank=True, null=True)
-    phone = models.CharField(max_length=15, blank=True)
+    location = models.CharField(max_length=100, blank=True)
+    phone = models.CharField(max_length=20, blank=True)
 
     def __str__(self):
         return f"{self.user.username}'s Profile"

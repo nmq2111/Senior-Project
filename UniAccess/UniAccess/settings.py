@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 AUTH_USER_MODEL = 'main_app.CustomUser'
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -77,7 +78,7 @@ WSGI_APPLICATION = 'UniAccess.wsgi.application'
 DATABASES = {
   'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME' : 'UniAccess',
+        'NAME' : 'UNIAccess',
         'USER' : 'postgres',
         'PASSWORD' : '121212',
         'PORT': '5432'
@@ -123,8 +124,15 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'main_app' / 'static',
 ]
+
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+
 
 
 # Default primary key field type
