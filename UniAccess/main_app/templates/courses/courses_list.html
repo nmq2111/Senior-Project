@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">All Courses</h2>
+
+  {% if courses %}
+    <div class="list-group">
+      {% for course in courses %}
+        <a href="{% url 'course_detail' course.id %}" class="list-group-item list-group-item-action">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">{{ course.name }}</h5>
+              <small class="text-muted">Code: {{ course.code }}</small>
+            </div>
+            <span class="badge bg-primary">{{ course.teacher.get_full_name|default:course.teacher.username }}</span>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No courses available.</p>
+  {% endif %}
+
+  {% if user.is_authenticated and user.role == "admin" %}
+    <a href="{% url 'course_create' %}" class="btn btn-success mt-4">Add New Course</a>
+  {% endif %}
+</div>
+{% endblock %}

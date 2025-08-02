@@ -36,6 +36,38 @@ class CustomUser(AbstractUser):
 
 
 class Course(models.Model):
+    COLLEGE_CHOICES = [
+    ('arts_science', 'College of Arts & Science'),
+    ('business_finance', 'College of Business & Finance'),
+    ('engineering', 'College of Engineering'),
+    ('it', 'College of Information Technology'),
+    ('medical_health', 'College of Medical & Health Sciences'),
+    ]
+
+
+    SEMESTER_CHOICES = [
+        ('first', 'First'),
+        ('second' , 'Second'),
+        ('summer', 'Summer'),
+    ]
+
+    SESSION_TYPE_CHOICES = [
+        ('lecture', 'Lecture (50 min)'),
+        ('lab', 'Lab (100 min)'),
+    ]
+
+    DAYS_CHOICES = [
+        ('uth', 'Sunday, Tuesday, Thursday (UTH)'),
+        ('mw', 'Monday, Wednesday (MW)'),
+        ('fs', 'Friday, Saturday (FS) — Masters'),
+    ]
+    
+    def current_year():
+      return datetime.now().year
+    
+    def get_duration_minutes(self):
+      return 50 if self.session_type == 'lecture' else 100
+    
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=20, unique=True)
     teacher = models.ForeignKey(
@@ -43,9 +75,17 @@ class Course(models.Model):
         on_delete=models.CASCADE,
         limit_choices_to={'role': 'teacher'}
     )
+    year = models.PositiveIntegerField(default=current_year)
+    semester = models.CharField(max_length=10, choices=SEMESTER_CHOICES)
+    college  = models.CharField(max_length=100, choices=COLLEGE_CHOICES)
+    class_name = models.CharField(max_length=100)
+    capacity = models.PositiveIntegerField(default=5)
+    session_type = models.CharField(max_length=10, choices=SESSION_TYPE_CHOICES)
+    days = models.CharField(max_length=3, choices=DAYS_CHOICES)
+    
 
     def __str__(self):
-        return self.name
+     return f"{self.name} ({self.code}) – {self.get_session_type_display()} on {self.get_days_display()}"
 
 
 class Attendance(models.Model):

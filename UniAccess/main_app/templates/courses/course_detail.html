@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Course Details</h2>
+  <hr>
+
+  <div class="card p-3">
+    <h4>{{ course.name }} ({{ course.code }})</h4>
+    <p><strong>Teacher:</strong> {{ course.teacher.get_full_name }}</p>
+    <p><strong>Year:</strong> {{ course.year }}</p>
+    <p><strong>Semester:</strong> {{ course.get_semester_display }}</p>
+    <p><strong>College:</strong> {{ course.get_college_display }}</p>
+    <p><strong>Class:</strong> {{ course.class_name }}</p>
+    <p><strong>Capacity:</strong> {{ course.capacity }}</p>
+    <p><strong>Session Type:</strong> {{ course.get_session_type_display }} ({{ course.get_duration_minutes }} min)</p>
+    <p><strong>Days:</strong> {{ course.get_days_display }}</p>
+  </div>
+
+  <div class="mt-3">
+    <a href="{% url 'courses_list' %}" class="btn btn-secondary">Back to Courses</a>
+    {% if user.role == 'admin' %}
+      <a href="{% url 'course_edit' course.pk %}" class="btn btn-primary">Edit</a>
+      <a href="{% url 'course_delete' course.pk %}" class="btn btn-danger">Delete</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
