@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser , Profile , Course
+from .models import CustomUser , Profile , Course , CourseInfo
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -13,7 +13,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'role', 'password1', 'password2')
+        fields = ('username', 'first_name' , 'last_name', 'email', 'role', 'password1', 'password2')
 
 
 
@@ -26,4 +26,21 @@ class ProfileForm(forms.ModelForm):
 class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
-        fields = ['name', 'code', 'teacher' , 'year' , 'semester' , 'college' , 'class_name' , 'capacity' , 'session_type' , 'days']
+        fields = ['name', 'code', 'college']
+
+
+class CourseInfoForm(forms.ModelForm):
+    class Meta:
+        model = CourseInfo
+        fields = [
+            'course',         
+            'teacher',
+            'year',
+            'semester',
+            'class_name',
+            'capacity',
+            'session_type',
+            'days',
+            'status'
+        ]
+

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 from datetime import datetime  
+from django.core.validators import MinValueValidator
 
 
 
@@ -14,6 +15,8 @@ class CustomUser(AbstractUser):
 
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     custom_id = models.CharField(max_length=9, unique=True, blank=True, null=True)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
@@ -44,7 +47,18 @@ class Course(models.Model):
     ('medical_health', 'College of Medical & Health Sciences'),
     ]
 
+    
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=20, unique=True)
+    college  = models.CharField(max_length=100, choices=COLLEGE_CHOICES)
+    
 
+    def __str__(self):
+     return f"{self.name} ({self.code})"
+    
+
+
+class CourseInfo(models.Model):
     SEMESTER_CHOICES = [
         ('first', 'First'),
         ('second' , 'Second'),
@@ -61,15 +75,26 @@ class Course(models.Model):
         ('mw', 'Monday, Wednesday (MW)'),
         ('fs', 'Friday, Saturday (FS) — Masters'),
     ]
-    
+
+
+    STATUS_CHOICES = [
+        ('Yes', 'Available'),
+        ('No', 'Not Available'),
+    ]
+
+
     def current_year():
       return datetime.now().year
     
     def get_duration_minutes(self):
       return 50 if self.session_type == 'lecture' else 100
     
-    name = models.CharField(max_length=100)
-    code = models.CharField(max_length=20, unique=True)
+    @property
+    def is_full(self):
+      return self.registration_set.count() >= self.capacity
+
+
+    course = models.ForeignKey('Course', on_delete=models.CASCADE)
     teacher = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -77,15 +102,41 @@ class Course(models.Model):
     )
     year = models.PositiveIntegerField(default=current_year)
     semester = models.CharField(max_length=10, choices=SEMESTER_CHOICES)
-    college  = models.CharField(max_length=100, choices=COLLEGE_CHOICES)
     class_name = models.CharField(max_length=100)
-    capacity = models.PositiveIntegerField(default=5)
+    capacity = models.PositiveIntegerField(
+        validators=[MinValueValidator(5)], 
+    )
     session_type = models.CharField(max_length=10, choices=SESSION_TYPE_CHOICES)
     days = models.CharField(max_length=3, choices=DAYS_CHOICES)
+    status = models.CharField(max_length=3, choices=STATUS_CHOICES)
     
 
     def __str__(self):
-     return f"{self.name} ({self.code}) – {self.get_session_type_display()} on {self.get_days_display()}"
+     return f"{self.code} – {self.get_session_type_display()} on {self.get_days_display()}"
+    
+
+
+
+from django.db import models
+from django.conf import settings
+
+class CourseRegistration(models.Model):
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE,
+        limit_choices_to={'role': 'student'}
+    )
+    course = models.ForeignKey('Course', on_delete=models.CASCADE)
+    registered_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('student', 'course')
+
+    def __str__(self):
+        return f"{self.student.username} → {self.course.name}"
+
+    
+
 
 
 class Attendance(models.Model):
