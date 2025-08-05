@@ -1,12 +1,13 @@
-from django.urls import reverse , reverse_lazy
+from django.urls import reverse , reverse_lazy 
 from django.views.generic.edit import CreateView , UpdateView , DeleteView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.http import HttpResponseForbidden
-from django.shortcuts import get_object_or_404 , render
+from django.shortcuts import get_object_or_404 , render , redirect
+from django.contrib import messages
 
-from ..models import Course , CourseInfo , CourseRegistration
+from ..models import Course , CourseInfo , Enrollment
 from ..forms import CourseForm , CourseInfoForm 
 
 
@@ -89,6 +90,17 @@ class CourseInfoCreate(LoginRequiredMixin , CreateView):
     form_class = CourseInfoForm
     template_name = 'courses/course_Info/courseInfo_form.html' 
     success_url = reverse_lazy('courseInfo_list')
+
+    def form_valid(self, form):
+       print("Form is valid")  # ✅ Will show in terminal
+       return super().form_valid(form)
+    
+
+    def form_invalid(self, form):
+       print("Form is INVALID:", form.errors)  # ❌ Shows what's wrong
+       return super().form_invalid(form)
+
+
     
     
     def dispatch(self, request, *args, **kwargs):
@@ -110,7 +122,9 @@ class CourseInfoEdit(LoginRequiredMixin , UpdateView):
             'capacity',
             'session_type',
             'days',
-            'status'
+            'status',
+            'start_time',
+            'end_time'
         ]
     template_name = 'courses/course_Info/courseInfo_form.html' 
     
@@ -140,15 +154,52 @@ class CourseInfoDelete(LoginRequiredMixin , DeleteView):
 
 
 @login_required
-def available_courses(request):
-    if request.user.role != 'student':
+def register_course(request):
+    user = request.user
+
+    if user.role != 'student':
+        messages.error(request, "Only students can register for courses.")
         return redirect('home')
 
-    # Limit to non-full courses and exclude ones already registered by the student
-    registered_courses = CourseRegistration.objects.filter(student=request.user).values_list('course_id', flat=True)
-    available = Course.objects.exclude(id__in=registered_courses).filter(capacity__gt=models.F('registration__count'))
+    
+    enrolled = Enrollment.objects.filter(student=user)
+    enrolled_courseinfo_ids = enrolled.values_list('courseInfo__id', flat=True)
 
-    return render(request, 'courses/available_courses.html', {
-        'available_courses': available,
-        'current_count': CourseRegistration.objects.filter(student=request.user).count()
+    
+    available_courses = CourseInfo.objects.filter(status='Yes').exclude(id__in=enrolled_courseinfo_ids)
+
+    if request.method == 'POST':
+        course_info_id = request.POST.get('course_info_id')
+        course_info = get_object_or_404(CourseInfo, id=course_info_id)
+
+        if enrolled.count() >= 6:
+            messages.error(request, "you reached the maximum number of courses")
+        elif course_info.id in enrolled_courseinfo_ids:
+            messages.warning(request, "You are already registered in this course.")
+        elif course_info.is_full:
+            messages.warning(request, "Course is full.")
+        else:
+            Enrollment.objects.create(
+                student=user,
+                course=course_info.course,
+                courseInfo=course_info
+            )
+            messages.success(request, f"Successfully registered for {course_info.course.name}")
+            return redirect('register_course')
+
+    return render(request, 'courses/register.html', {
+        'available_courses': available_courses,
+        'registered_courses': enrolled,
     })
+
+
+
+
+@login_required
+def drop_course(request, enrollment_id):
+    enrollment = get_object_or_404(Enrollment, id=enrollment_id, student=request.user)
+    
+    if request.method == 'POST':
+        enrollment.delete()
+    
+    return redirect('register_course')

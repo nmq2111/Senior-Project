@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Course Registration</h2>
+
+<p>You are currently registered in {{ registered_courses.count }} course{{ registered_courses.count|pluralize }}.</p>
+
+<!-- Display messages -->
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<style>
+  .course-box {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #f9f9f9;
+  }
+  .course-title {
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+  .course-details {
+    margin-top: 8px;
+    font-size: 0.95em;
+    color: #555;
+  }
+  form.inline-form {
+    display: inline;
+  }
+</style>
+
+<!-- Available Courses -->
+<h3>Available Courses</h3>
+{% if available_courses %}
+  {% for course in available_courses %}
+    <div class="course-box">
+      <div class="course-title">{{ course.course.code }}</div>
+      <div class="course-details">
+        
+        <p><strong>course name:</strong> {{ course.course.name }}</p>
+        <p><strong>Teacher:</strong> {{ course.teacher.get_full_name }}</p>
+        <p><strong>Year:</strong> {{ course.year }}</p>
+        <p><strong>Semester:</strong> {{ course.get_semester_display }}</p>
+        <p><strong>College:</strong> {{ course.course.get_college_display }}</p>
+        <p><strong>Class:</strong> {{ course.class_name }}</p>
+    <p><strong>Capacity:</strong> {{ course.enrollments.count }}/{{ course.capacity }}</p>
+    <p><strong>Session Type:</strong> {{ course.get_session_type_display }} ({{ course.get_duration_minutes }} min)</p>
+    <p><strong>Days:</strong> {{ course.get_days_display }}</p>
+    <p><strong>status:</strong> {{ course.get_status_display}}</p>
+    <p><strong>Starting time:</strong> {{ course.start_time}}</p>
+    <p><strong>End time:</strong> {{ course.end_time}}</p>
+      </div>
+      <form method="POST" class="inline-form">
+        {% csrf_token %}
+        <input type="hidden" name="course_info_id" value="{{ course.id }}">
+        <button type="submit">Register</button>
+      </form>
+    </div>
+  {% endfor %}
+{% else %}
+  <p>No available courses or you reached the maximum limit.</p>
+{% endif %}
+
+<hr>
+
+<!-- Registered Courses -->
+<h3>Your Registered Courses</h3>
+{% if registered_courses %}
+  <ul>
+    {% for reg in registered_courses %}
+      <li>
+        {{ reg.course.name }} - {{ reg.courseInfo.get_days_display }}
+        <form method="POST" action="{% url 'drop_course' reg.id %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" onclick="return confirm('Are you sure you want to drop this course?')">Drop</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>You have not registered for any courses yet.</p>
+{% endif %}
+
+{% endblock %}

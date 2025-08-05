@@ -21,6 +21,8 @@
     <p>No courses available.</p>
   {% endif %}
 
+   <a href="{% url 'register_course' %}" class="btn btn-danger mt-4">register for course</a>
+
   {% if user.is_authenticated and user.role == "admin" %}
   <a href="{% url 'courses_list' %}" class="btn btn-warning mt-4">Add new  Course</a>
 

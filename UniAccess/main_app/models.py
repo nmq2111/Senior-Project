@@ -37,7 +37,6 @@ class CustomUser(AbstractUser):
     
 
 
-
 class Course(models.Model):
     COLLEGE_CHOICES = [
     ('arts_science', 'College of Arts & Science'),
@@ -86,13 +85,6 @@ class CourseInfo(models.Model):
     def current_year():
       return datetime.now().year
     
-    def get_duration_minutes(self):
-      return 50 if self.session_type == 'lecture' else 100
-    
-    @property
-    def is_full(self):
-      return self.registration_set.count() >= self.capacity
-
 
     course = models.ForeignKey('Course', on_delete=models.CASCADE)
     teacher = models.ForeignKey(
@@ -109,32 +101,38 @@ class CourseInfo(models.Model):
     session_type = models.CharField(max_length=10, choices=SESSION_TYPE_CHOICES)
     days = models.CharField(max_length=3, choices=DAYS_CHOICES)
     status = models.CharField(max_length=3, choices=STATUS_CHOICES)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+
+    def get_duration_minutes(self):
+      return 50 if self.session_type == 'lecture' else 100
+    
+    @property
+    def is_full(self):
+        return self.enrollments.count() >= self.capacity
     
 
     def __str__(self):
-     return f"{self.code} – {self.get_session_type_display()} on {self.get_days_display()}"
+     return f"{self.course.code} – {self.get_session_type_display()} on {self.get_days_display()}"
     
 
 
-
-from django.db import models
-from django.conf import settings
-
-class CourseRegistration(models.Model):
+class Enrollment(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    courseInfo = models.ForeignKey(CourseInfo, on_delete=models.CASCADE, related_name='enrollments')
     student = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         limit_choices_to={'role': 'student'}
     )
-    course = models.ForeignKey('Course', on_delete=models.CASCADE)
-    registered_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        unique_together = ('student', 'course')
+    def get_full_name(self):
+        return f"{self.student.first_name} {self.student.last_name}"
+
 
     def __str__(self):
-        return f"{self.student.username} → {self.course.name}"
-
+        return f"{self.student.get_full_name()} - {self.course.name}"
     
 
 

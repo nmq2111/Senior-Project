@@ -12,10 +12,12 @@
     <p><strong>Semester:</strong> {{ course.get_semester_display }}</p>
     <p><strong>College:</strong> {{ course.course.get_college_display }}</p>
     <p><strong>Class:</strong> {{ course.class_name }}</p>
-    <p><strong>Capacity:</strong> {{ course.capacity }}</p>
+    <p><strong>Capacity:</strong> {{ course.enrollments.count }}/{{ course.capacity }}</p>
     <p><strong>Session Type:</strong> {{ course.get_session_type_display }} ({{ course.get_duration_minutes }} min)</p>
     <p><strong>Days:</strong> {{ course.get_days_display }}</p>
-    <p><strong>status:</strong> {{ course.get_status_display }}</p>
+    <p><strong>status:</strong> {{ course.get_status_display}}</p>
+    <p><strong>Starting time:</strong> {{ course.start_time}}</p>
+    <p><strong>End time:</strong> {{ course.end_time}}</p>
   </div>
 
   <div class="mt-3">

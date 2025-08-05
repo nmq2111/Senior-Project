@@ -41,6 +41,8 @@ class CourseInfoForm(forms.ModelForm):
             'capacity',
             'session_type',
             'days',
-            'status'
+            'status',
+            'start_time',
+            'end_time'
         ]
 
