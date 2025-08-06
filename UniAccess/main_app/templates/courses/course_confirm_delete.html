@@ -1,14 +1,21 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% load static %} {% block styles %}
+<link rel="stylesheet" href="{% static 'css/courses.css' %}" />
+{% endblock %} {% block content %}
+<div class="delete-course-wrapper">
+  <div class="delete-course-card">
+    <h2 class="delete-heading">Delete Course</h2>
+    <p class="delete-warning">
+      Are you sure you want to delete the course:
+      <strong>{{ object.name }}</strong> ({{ object.code }})?
+    </p>
 
-{% block content %}
-<div class="container mt-4">
-  <h2 class="mb-4 text-danger">Delete Course</h2>
-  <p>Are you sure you want to delete the course: <strong>{{ object.name }}</strong> ({{ object.code }})?</p>
-
-  <form method="post">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-danger">Yes, Delete</button>
-    <a href="{% url 'course_detail' object.pk %}" class="btn btn-secondary">Cancel</a>
-  </form>
+    <form method="post" class="delete-form">
+      {% csrf_token %}
+      <button type="submit" class="btn-delete-confirm">Yes, Delete</button>
+      <a href="{% url 'course_detail' object.pk %}" class="btn-cancel"
+        >Cancel</a
+      >
+    </form>
+  </div>
 </div>
 {% endblock %}

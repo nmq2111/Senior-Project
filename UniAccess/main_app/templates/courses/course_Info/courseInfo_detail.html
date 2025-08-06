@@ -1,30 +1,36 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="container mt-4">
-  <h2>Course Details</h2>
-  <hr>
-
-  <div class="card p-3">
-    <h4>{{ course.course.code }} </h4>
-    <p><strong>course name :</strong> {{ course.course.name }}</p>
+{% extends 'base.html' %} {% load static %} {% block styles %}
+<link rel="stylesheet" href="{% static 'css/courses.css' %}" />
+{% endblock %} {% block content %}
+<div class="course-detail-wrapper">
+  <div class="course-detail-card">
+    <h2 class="course-code">{{ course.course.code }}</h2>
+    <p><strong>Course Name:</strong> {{ course.course.name }}</p>
     <p><strong>Teacher:</strong> {{ course.teacher.get_full_name }}</p>
     <p><strong>Year:</strong> {{ course.year }}</p>
     <p><strong>Semester:</strong> {{ course.get_semester_display }}</p>
     <p><strong>College:</strong> {{ course.course.get_college_display }}</p>
     <p><strong>Class:</strong> {{ course.class_name }}</p>
-    <p><strong>Capacity:</strong> {{ course.enrollments.count }}/{{ course.capacity }}</p>
-    <p><strong>Session Type:</strong> {{ course.get_session_type_display }} ({{ course.get_duration_minutes }} min)</p>
+
+    <p><strong>Capacity:</strong> {{ course.capacity }}</p>
+    <p>
+      <strong>enrollments:</strong> {{ course.enrollments.count|default:0 }}
+    </p>
+
+    <p><strong>Session Type:</strong> {{ course.get_session_type_display }}</p>
+
     <p><strong>Days:</strong> {{ course.get_days_display }}</p>
-    <p><strong>status:</strong> {{ course.get_status_display}}</p>
-    <p><strong>Starting time:</strong> {{ course.start_time}}</p>
-    <p><strong>End time:</strong> {{ course.end_time}}</p>
+    <p><strong>Status:</strong> {{ course.get_status_display }}</p>
+    <p><strong>Start Time:</strong> {{ course.start_time }}</p>
+    <p><strong>End Time:</strong> {{ course.end_time }}</p>
   </div>
 
-  <div class="mt-3">
-    <a href="{% url 'courseInfo_list' %}" class="btn btn-secondary">Back to Courses</a>
+  <div class="course-buttons">
+    <a href="{% url 'courseInfo_list' %}" class="btn-gray">← Back</a>
     {% if user.role == 'admin' %}
-      <a href="{% url 'courseInfo_edit' course.pk %}" class="btn btn-primary">Edit</a>
-      <a href="{% url 'courseInfo_delete' course.pk %}" class="btn btn-danger">Delete</a>
+    <a href="{% url 'courseInfo_edit' course.pk %}" class="btn-red">Edit</a>
+    <a href="{% url 'courseInfo_delete' course.pk %}" class="btn-danger"
+      >Delete</a
+    >
     {% endif %}
   </div>
 </div>

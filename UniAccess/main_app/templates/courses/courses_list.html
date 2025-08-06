@@ -1,32 +1,42 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% load static %} {% block styles %}
+<link rel="stylesheet" href="{% static 'css/courses.css' %}" />
+{% endblock %} {% block content %}
+<div class="course-container">
+  <div class="top-icons">
+    {% if user.is_authenticated and user.role == "admin" %}
+    <a
+      href="{% url 'courseInfo_list' %}"
+      class="icon-btn yellow"
+      title="Available Courses"
+    >
+      <i class="fa-solid fa-book"></i>
+    </a>
+    <a
+      href="{% url 'course_create' %}"
+      class="icon-btn green"
+      title="Add New Course"
+    >
+      <i class="fa-solid fa-pen-to-square"></i>
+    </a>
+    {% endif %}
+  </div>
 
-{% block content %}
-<div class="container mt-4">
-  <h2 class="mb-4">All Courses</h2>
+  <h2 class="course-title">All Courses</h2>
 
   {% if courses %}
-    <div class="list-group">
-      {% for course in courses %}
-        <a href="{% url 'course_detail' course.id %}" class="list-group-item list-group-item-action">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h5 class="mb-1">{{ course.name }}</h5>
-            </div>
-            <span class="badge bg-primary">{{ course.code  }}</span>
-          </div>
-        </a>
-      {% endfor %}
-    </div>
+  <div class="course-list">
+    {% for course in courses %}
+    <a href="{% url 'course_detail' course.id %}" class="course-card">
+      <div class="course-header">
+        <div class="course-code">{{ course.code }}</div>
+        <div class="badge-status">View</div>
+      </div>
+      <p>{{ course.name }}</p>
+    </a>
+    {% endfor %}
+  </div>
   {% else %}
-    <p>No courses available.</p>
-  {% endif %}
-
-
-
-  {% if user.is_authenticated and user.role == "admin" %}
-    <a href="{% url 'courseInfo_list' %}" class="btn btn-warning mt-4">back to Available Courses</a>
-    
-    <a href="{% url 'course_create' %}" class="btn btn-success mt-4">Add New Course</a>
+  <p class="no-courses">No courses available.</p>
   {% endif %}
 </div>
 {% endblock %}

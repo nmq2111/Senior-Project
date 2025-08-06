@@ -1,18 +1,35 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'base.html' %} {% load static %} {% block styles %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+{% endblock %} {% block content %}
 
-{% block styles %}
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-{% endblock %}
+<div class="edit-profile-wrapper">
+  <div class="edit-profile-card">
+    <!-- Avatar & Name -->
+    <div class="edit-profile-header">
+      <div class="edit-avatar">
+        <img
+          src="{{ user.profile.avatar.url|default:'/static/images/default-avatar.png' }}"
+          alt="Avatar"
+        />
+      </div>
+      <h3>{{ user.username }}</h3>
+      <p>{{ user.profile.location|default:"" }}</p>
+    </div>
 
-{% block content %}
-<div class="container mt-5">
-  <div class="card p-4 shadow-lg">
-    <h2>Edit Profile</h2>
-    <form method="POST" enctype="multipart/form-data">
+    <!-- Form -->
+    <form method="POST" enctype="multipart/form-data" class="edit-profile-form">
       {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit" class="btn btn-success">Save Changes</button>
+      <div class="form-grid">
+        {% for field in form %}
+        <div class="form-field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }} {% if field.errors %}
+          <div class="form-error">{{ field.errors }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <button type="submit" class="edit-btn full-width">Save Changes</button>
     </form>
   </div>
 </div>

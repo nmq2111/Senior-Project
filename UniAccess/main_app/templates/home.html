@@ -1,10 +1,12 @@
 {% extends 'base.html' %} {% load static %} {% block content %}
+<div class="welcome-container">
+  <!-- <h1>Welcome to UniAccess</h1> -->
+  <img
+    src="{% static 'images/logo.png' %}"
+    alt="UniAccess Logo"
+    class="welcome-logo"
+  />
 
-<div id="landing">
-  <section class="hero">
-    <div class="hero-image">
-      <h1>Home</h1>
-      </div>
-  </section>
+  <!-- <p>Your gateway to easy and secure access to your university.</p> -->
 </div>
 {% endblock %}

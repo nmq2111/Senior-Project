@@ -1,81 +1,84 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/courses.css' %}">
+{% endblock %}
+
 {% block content %}
+<div class="course-form-wrapper">
+  <div class="course-form-card">
+    <h2 class="form-title">Course Info</h2>
 
-<h2>Create or Update Course Info</h2>
+    <form method="POST">
+      {% csrf_token %}
 
-<form method="POST">
-  {% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="id_course">Course:</label>
+          {{ form.course }}
+        </div>
 
-  <label for="id_course">Course:</label>
-  {{ form.course }}
-  <br>
+        <div class="form-group">
+          <label for="id_teacher">Teacher:</label>
+          {{ form.teacher }}
+        </div>
 
- 
-  <label for="id_teacher">Teacher:</label>
-  {{ form.teacher }}
-  <br>
+        <div class="form-group">
+          <label for="id_year">Year:</label>
+          {{ form.year }}
+        </div>
 
+        <div class="form-group">
+          <label for="id_semester">Semester:</label>
+          {{ form.semester }}
+        </div>
 
+        <div class="form-group">
+          <label for="id_class_name">Class Name:</label>
+          {{ form.class_name }}
+        </div>
 
-  <label for="id_year">Year:</label>
-  {{ form.year }}
-  <br>
-  
+        <div class="form-group">
+          <label for="id_capacity">Capacity:</label>
+          {{ form.capacity }}
+        </div>
 
-  <label for="id_semester">Semester:</label>
-  {{ form.semester }}
-  <br>
+        <div class="form-group">
+          <label for="id_session_type">Session Type:</label>
+          <select name="session_type" id="id_session_type" onchange="calculateEndTime()">
+            <option value="lecture" {% if form.session_type.value == 'lecture' %}selected{% endif %}>Lecture (50 min)</option>
+            <option value="lab" {% if form.session_type.value == 'lab' %}selected{% endif %}>Lab (100 min)</option>
+          </select>
+        </div>
 
+        <div class="form-group">
+          <label for="id_days">Days:</label>
+          {{ form.days }}
+        </div>
 
- 
-  <label for="id_class_name">Class Name:</label>
-  {{ form.class_name }}
-  <br>
+        <div class="form-group">
+          <label for="id_status">Status:</label>
+          {{ form.status }}
+        </div>
 
+        <div class="form-group">
+          <label for="id_start_time">Start Time:</label>
+          <input type="time" name="start_time" id="id_start_time" value="{{ form.start_time.value|default_if_none:'' }}" onchange="calculateEndTime()" required>
+        </div>
 
-  
-  <label for="id_capacity">Capacity:</label>
-  {{ form.capacity }}
-  <br>
+        <div class="form-group">
+          <label for="id_end_time">End Time:</label>
+          <input type="time" name="end_time" id="id_end_time" required>
+        </div>
+      </div>
 
-
-
-  <label for="id_session_type">Session Type:</label>
-  <select name="session_type" id="id_session_type" onchange="calculateEndTime()">
-    <option value="lecture" {% if form.session_type.value == 'lecture' %}selected{% endif %}>Lecture (50 min)</option>
-    <option value="lab" {% if form.session_type.value == 'lab' %}selected{% endif %}>Lab (100 min)</option>
-  </select>
-  <br>
-
-
-  <label for="id_days">Days:</label>
-  {{ form.days }}
-  <br>
-
-
-
-  <label for="id_status">Status:</label>
-  {{ form.status }}
-  <br>
-
-
-  
-  <label for="id_start_time">Start Time:</label>
-  <input type="time" name="start_time" id="id_start_time" value="{{ form.start_time.value|default_if_none:'' }}" onchange="calculateEndTime()" required>
-  <br>
-
-  <label for="id_start_time">End Time:</label>
-  <input type="time" name="end_time" id="id_end_time" required>
-  <br>
-
-
-
-
-
-  <br><br>
-  <button type="submit">Save Course Info</button>
-</form>
-
+      <div class="form-actions">
+        <button type="submit" class="btn-red">Save Course Info</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <script>
 function calculateEndTime() {
@@ -98,5 +101,4 @@ function calculateEndTime() {
     document.getElementById('id_end_time').value = endTime;
 }
 </script>
-
 {% endblock %}

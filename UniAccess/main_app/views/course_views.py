@@ -92,12 +92,12 @@ class CourseInfoCreate(LoginRequiredMixin , CreateView):
     success_url = reverse_lazy('courseInfo_list')
 
     def form_valid(self, form):
-       print("Form is valid")  # ✅ Will show in terminal
+       print("Form is valid")  
        return super().form_valid(form)
     
 
     def form_invalid(self, form):
-       print("Form is INVALID:", form.errors)  # ❌ Shows what's wrong
+       print("Form is INVALID:", form.errors)  
        return super().form_invalid(form)
 
 
