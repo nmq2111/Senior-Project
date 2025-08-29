@@ -4,7 +4,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+    <link
+      rel="icon"
+      type="image/png"
+      href="{% static 'images/Logo - icon.png' %}"
+    />
     <title>{% block title %}UniAccess{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
     <link rel="stylesheet" href="{% static 'css/courses.css' %}" />
@@ -30,8 +34,17 @@
           {% if user.is_authenticated %}
           <a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a>
           <a href="{% url 'Profile' %}"><i class="fas fa-user"></i> Profile</a>
+          <a href="{% url 'home' %}"
+            ><i class="fa-solid fa-chart-simple"></i> Dashboard</a
+          >
           <a href="{% url 'courseInfo_list' %}"
             ><i class="fas fa-book"></i> Courses</a
+          >
+          <a href="{% url 'home' %}"
+            ><i class="fa-solid fa-clipboard-user"></i> Attendances</a
+          >
+          <a href="{% url 'home' %}"
+            ><i class="fa-solid fa-landmark"></i> Class</a
           >
           {% else %}
           <a href="{% url 'signup' %}"

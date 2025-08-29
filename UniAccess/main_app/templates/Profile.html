@@ -17,9 +17,13 @@
     <div class="profile-info-box">
       <strong>Full name</strong> {{ user.get_full_name }}
     </div>
-    <div class="profile-info-box"><strong>Email</strong> {{ user.email }}</div>
+
     <div class="profile-info-box"><strong>Role</strong> {{ user.role }}</div>
+    <div class="profile-info-box">
+      <strong>college</strong> {{ user.college }}
+    </div>
     <div class="profile-info-box"><strong>ID</strong> {{ user.custom_id }}</div>
+    <div class="profile-info-box"><strong>Email</strong> {{ user.email }}</div>
     <div class="profile-info-box">
       <strong>Phone</strong> {{ user.profile.phone|default:'-' }}
     </div>

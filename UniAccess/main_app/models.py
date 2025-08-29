@@ -13,7 +13,17 @@ class CustomUser(AbstractUser):
         ('admin', 'Admin'),
     ]
 
+    COLLEGE_CHOICES = [
+    ('arts_science', 'College of Arts & Science'),
+    ('business_finance', 'College of Business & Finance'),
+    ('engineering', 'College of Engineering'),
+    ('it', 'College of Information Technology'),
+    ('medical_health', 'College of Medical & Health Sciences'),
+    ('admin', 'Admin'),
+    ]
+
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    college = models.CharField(max_length=100, choices=COLLEGE_CHOICES)
     custom_id = models.CharField(max_length=9, unique=True, blank=True, null=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -44,6 +54,7 @@ class Course(models.Model):
     ('engineering', 'College of Engineering'),
     ('it', 'College of Information Technology'),
     ('medical_health', 'College of Medical & Health Sciences'),
+    ('general' , 'General'),
     ]
 
     
