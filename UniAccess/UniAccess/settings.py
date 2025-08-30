@@ -71,6 +71,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'UniAccess.wsgi.application'
 
+RFID_API_TOKEN = os.environ.get("RFID_API_TOKEN", "dev-123") 
+
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

@@ -51,50 +51,67 @@
       <button type="submit" class="btn-login w-100">Sign Up</button>
     </form>
 
-    {% if recent_scans %}
     <hr class="my-4" />
     <h5 class="fw-bold">Recent Scans</h5>
     <p class="text-muted small mb-2">
       Click a UID to auto-fill the “RFID Card UID” field.
     </p>
-    <ul class="list-group">
-      {% for s in recent_scans %}
-      <li
-        class="list-group-item d-flex justify-content-between align-items-center"
-      >
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary copy-uid-btn"
-          data-uid="{{ s.uid }}"
-        >
-          {{ s.uid }}
-        </button>
-        <small class="text-muted">{{ s.created_at|date:"Y-m-d H:i" }}</small>
-      </li>
-      {% empty %}
-      <li class="list-group-item">No scans yet.</li>
-      {% endfor %}
+    <ul id="recent-list" class="list-group">
+      <li class="list-group-item text-center text-muted">NO TAGS YET</li>
     </ul>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const input = document.getElementById('id_tag_uid')
-        document.querySelectorAll('.copy-uid-btn').forEach((btn) => {
-          btn.addEventListener('click', () => {
-            if (input) {
-              input.value = btn.dataset.uid
-              input.focus()
-              input.classList.add('is-valid')
-              setTimeout(() => input.classList.remove('is-valid'), 800)
+      ;(function () {
+        const list = document.getElementById('recent-list')
+        const uidInput = document.getElementById('id_tag_uid')
+
+        function wireCopyButtons() {
+          document.querySelectorAll('.copy-uid-btn').forEach((btn) => {
+            btn.onclick = () => {
+              if (!uidInput) return
+              uidInput.value = btn.dataset.uid
+              uidInput.focus()
+              uidInput.classList.add('is-valid')
+              setTimeout(() => uidInput.classList.remove('is-valid'), 800)
             }
           })
-        })
-      })
+        }
+
+        async function fetchRecent() {
+          try {
+            const res = await fetch("{% url 'recent_unassigned_scans_api' %}", {
+              credentials: 'same-origin'
+            })
+            if (!res.ok) return
+            const data = await res.json()
+            const items = data.items || []
+            list.innerHTML = ''
+            if (!items.length) {
+              list.innerHTML =
+                '<li class="list-group-item text-center text-muted">NO TAGS YET</li>'
+            } else {
+              items.forEach((s) => {
+                const li = document.createElement('li')
+                li.className =
+                  'list-group-item d-flex justify-content-between align-items-center'
+                const when = new Date(s.last_seen).toLocaleString()
+                li.innerHTML = `
+            <button type="button" class="btn btn-sm btn-outline-secondary copy-uid-btn" data-uid="${s.uid}">${s.uid}</button>
+            <small class="text-muted">${when}</small>
+          `
+                list.appendChild(li)
+              })
+              wireCopyButtons()
+            }
+          } catch (e) {
+            /* ignore */
+          }
+        }
+
+        fetchRecent()
+        setInterval(fetchRecent, 2000) // poll every 2s
+      })()
     </script>
-    {% endif %}
   </div>
-  <a href="{% url 'admin_signup_assign_rfid' %}"
-    ><i class="fas fa-user-plus"></i> UID
-  </a>
 </div>
 {% endblock %}
