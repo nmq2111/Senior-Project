@@ -35,6 +35,7 @@
             >{{ field.label }}</label
           >
           {{ field }} {% if field.errors %}
+
           <div class="text-danger small">{{ field.errors.0 }}</div>
           {% endif %}
         </div>
