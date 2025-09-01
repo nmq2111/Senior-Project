@@ -2,8 +2,8 @@ from django.urls import path
 from main_app import views
 
 urlpatterns = [
-    path('staff/signup-assign/', views.admin_signup_assign_rfid, name='admin_signup_assign_rfid'),
-    path('api/rfid/ingest/', views.ingest_scan, name='rfid_ingest'),
-    path('api/rfid/recent-unassigned/', views.recent_unassigned_scans_api, name='recent_unassigned_scans_api'),
-
+    path("api/rfid/scan/", views.rfid_scan, name="rfid_scan"),
+    path("attendance/", views.attendance_list, name="attendance_list"),
+    path("attendance/unassigned/", views.unassigned_list, name="unassigned_list"),
+    path("attendance/assign/<int:record_id>/", views.assign_uid_to_user, name="assign_uid_to_user"),
 ]

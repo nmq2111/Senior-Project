@@ -165,28 +165,26 @@ class Attendance(models.Model):
         ('absent', 'Absent'),
     ]
 
-    student = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        limit_choices_to={'role': 'student'},
-        related_name='attendances'
-    )
-    course_info = models.ForeignKey(CourseInfo, on_delete=models.CASCADE, related_name='attendances')
-    date = models.DateField(default=today_local)        # wrapper, serializable
-    time = models.TimeField(default=now_local_time)     # wrapper, serializable
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='present')
+    tag = models.ForeignKey('RFIDTag', on_delete=models.SET_NULL, null=True, blank=True, related_name='records')
+    uid = models.CharField(max_length=100, db_index=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='attendance_records')
+    scanned_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="SCAN")
+    device_id = models.CharField(max_length=100, blank=True, null=True)  
+    source_ip = models.GenericIPAddressField(blank=True, null=True)
+    success = models.BooleanField(default=True)
+    note = models.TextField(blank=True, null=True)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['student', 'course_info', 'date'],
-                name='unique_attendance_per_day'
-            ),
+        indexes = [
+            models.Index(fields=['uid', 'scanned_at']),
         ]
+        ordering = ['-scanned_at']
 
     def __str__(self):
-        full_name = f"{self.student.first_name} {self.student.last_name}".strip() or self.student.username
-        return f"{full_name} – {self.course_info.course.code} on {self.date} ({self.status})"
+        who = self.user.username if self.user else "unknown-user"
+        return f"{self.scanned_at:%Y-%m-%d %H:%M:%S} | {self.uid} -> {who} [{self.status}]"
+
 
 
 class RFIDTag(models.Model):
