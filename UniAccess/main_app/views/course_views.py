@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.urls import reverse , reverse_lazy 
 from django.views.generic.edit import CreateView , UpdateView , DeleteView
 from django.contrib.auth.decorators import login_required
@@ -32,10 +33,26 @@ class CourseCreate(LoginRequiredMixin , CreateView):
 
     
     
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.role != 'admin':
-            return HttpResponseForbidden("Only admins can add courses.")
-        return super().dispatch(request, *args, **kwargs)
+    def save(self, *args, **kwargs):
+     if self.role == 'admin':
+        self.is_staff = True
+        self.is_superuser = True
+     else:
+        # Students and teachers can’t be superusers
+        self.is_superuser = False
+        # Teachers might be staff if you want them in Django Admin
+        self.is_staff = (self.role == 'teacher')
+
+     is_new = self.pk is None
+     super().save(*args, **kwargs)
+
+     if is_new and not self.custom_id:
+        year = timezone.now().year
+        prefix = {'student': 'S', 'teacher': 'T', 'admin': 'A'}.get(self.role, 'X')
+        number_part = f"{self.id:04d}"
+        self.custom_id = f"{prefix}{year}{number_part}"
+        super().save(update_fields=['custom_id'])
+
 
 
 
@@ -50,10 +67,25 @@ class CourseEdit(LoginRequiredMixin , UpdateView):
     
 
     
-    def dispatch(self, request, *args, **kwargs):
-     if request.user.role != 'admin':
-        return HttpResponseForbidden("Only admins can edit courses.")
-     return super().dispatch(request, *args, **kwargs)
+    def save(self, *args, **kwargs):
+     if self.role == 'admin':
+        self.is_staff = True
+        self.is_superuser = True
+     else:
+        # Students and teachers can’t be superusers
+        self.is_superuser = False
+        # Teachers might be staff if you want them in Django Admin
+        self.is_staff = (self.role == 'teacher')
+
+     is_new = self.pk is None
+     super().save(*args, **kwargs)
+
+     if is_new and not self.custom_id:
+        year = timezone.now().year
+        prefix = {'student': 'S', 'teacher': 'T', 'admin': 'A'}.get(self.role, 'X')
+        number_part = f"{self.id:04d}"
+        self.custom_id = f"{prefix}{year}{number_part}"
+        super().save(update_fields=['custom_id'])
 
 
 
@@ -63,10 +95,25 @@ class CourseDelete(LoginRequiredMixin , DeleteView):
     success_url = reverse_lazy('courses_list')
 
 
-    def dispatch(self, request, *args, **kwargs):
-     if request.user.role != 'admin':
-        return HttpResponseForbidden("Only admins can delete courses.")
-     return super().dispatch(request, *args, **kwargs)
+    def save(self, *args, **kwargs):
+     if self.role == 'admin':
+        self.is_staff = True
+        self.is_superuser = True
+     else:
+        # Students and teachers can’t be superusers
+        self.is_superuser = False
+        # Teachers might be staff if you want them in Django Admin
+        self.is_staff = (self.role == 'teacher')
+
+     is_new = self.pk is None
+     super().save(*args, **kwargs)
+
+     if is_new and not self.custom_id:
+        year = timezone.now().year
+        prefix = {'student': 'S', 'teacher': 'T', 'admin': 'A'}.get(self.role, 'X')
+        number_part = f"{self.id:04d}"
+        self.custom_id = f"{prefix}{year}{number_part}"
+        super().save(update_fields=['custom_id'])
     
 
 
@@ -99,14 +146,28 @@ class CourseInfoCreate(LoginRequiredMixin , CreateView):
     def form_invalid(self, form):
        print("Form is INVALID:", form.errors)  
        return super().form_invalid(form)
-
-
     
     
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.role != 'admin':
-            return HttpResponseForbidden("Only admins can add courses.")
-        return super().dispatch(request, *args, **kwargs)
+    def save(self, *args, **kwargs):
+     if self.role == 'admin':
+        self.is_staff = True
+        self.is_superuser = True
+     else:
+        # Students and teachers can’t be superusers
+        self.is_superuser = False
+        # Teachers might be staff if you want them in Django Admin
+        self.is_staff = (self.role == 'teacher')
+
+     is_new = self.pk is None
+     super().save(*args, **kwargs)
+
+     if is_new and not self.custom_id:
+        year = timezone.now().year
+        prefix = {'student': 'S', 'teacher': 'T', 'admin': 'A'}.get(self.role, 'X')
+        number_part = f"{self.id:04d}"
+        self.custom_id = f"{prefix}{year}{number_part}"
+        super().save(update_fields=['custom_id'])
+
 
 
 
@@ -133,10 +194,25 @@ class CourseInfoEdit(LoginRequiredMixin , UpdateView):
     
 
     
-    def dispatch(self, request, *args, **kwargs):
-     if request.user.role != 'admin':
-        return HttpResponseForbidden("Only admins can edit courses.")
-     return super().dispatch(request, *args, **kwargs)
+    def save(self, *args, **kwargs):
+     if self.role == 'admin':
+        self.is_staff = True
+        self.is_superuser = True
+     else:
+        # Students and teachers can’t be superusers
+        self.is_superuser = False
+        # Teachers might be staff if you want them in Django Admin
+        self.is_staff = (self.role == 'teacher')
+
+     is_new = self.pk is None
+     super().save(*args, **kwargs)
+
+     if is_new and not self.custom_id:
+        year = timezone.now().year
+        prefix = {'student': 'S', 'teacher': 'T', 'admin': 'A'}.get(self.role, 'X')
+        number_part = f"{self.id:04d}"
+        self.custom_id = f"{prefix}{year}{number_part}"
+        super().save(update_fields=['custom_id'])
 
 
 
@@ -146,10 +222,25 @@ class CourseInfoDelete(LoginRequiredMixin , DeleteView):
     success_url = reverse_lazy('courseInfo_list')
 
 
-    def dispatch(self, request, *args, **kwargs):
-     if request.user.role != 'admin':
-        return HttpResponseForbidden("Only admins can delete courses.")
-     return super().dispatch(request, *args, **kwargs)
+    def save(self, *args, **kwargs):
+     if self.role == 'admin':
+        self.is_staff = True
+        self.is_superuser = True
+     else:
+        # Students and teachers can’t be superusers
+        self.is_superuser = False
+        # Teachers might be staff if you want them in Django Admin
+        self.is_staff = (self.role == 'teacher')
+
+     is_new = self.pk is None
+     super().save(*args, **kwargs)
+
+     if is_new and not self.custom_id:
+        year = timezone.now().year
+        prefix = {'student': 'S', 'teacher': 'T', 'admin': 'A'}.get(self.role, 'X')
+        number_part = f"{self.id:04d}"
+        self.custom_id = f"{prefix}{year}{number_part}"
+        super().save(update_fields=['custom_id'])
     
 
 

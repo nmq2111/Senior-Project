@@ -1,13 +1,15 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser , Profile , Course , CourseInfo , RFIDTag
+from .models import CustomUser , Profile , Course , CourseInfo , RFIDTag ,Attendance
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class CustomUserCreationForm(UserCreationForm):
     ROLE_CHOICES = [
-        ('student', 'Student'),
-        ('teacher', 'Teacher'),
         ('admin', 'Admin'),
+        ('teacher', 'Teacher'),     
     ]
     role = forms.ChoiceField(choices=ROLE_CHOICES, widget=forms.Select(attrs={'class': 'form-select'}))
 
@@ -48,23 +50,47 @@ class CourseInfoForm(forms.ModelForm):
 
 
 
-class CreateRFIDForm(UserCreationForm):
-    # lock to student for this flow; change if you want
-    role = forms.ChoiceField(choices=[('student','Student')], widget=forms.Select(attrs={'class':'form-select'}))
-    college = forms.ChoiceField(choices=CustomUser.COLLEGE_CHOICES, widget=forms.Select(attrs={'class':'form-select'}))
-    tag_uid = forms.CharField(
-        label='RFID Card UID',
-        max_length=100,
-        required=True,
-        widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'e.g., 04:A3:1C:7B'})
+def recent_unassigned_uids(limit=25):
+    seen = set()
+    out = []
+    for rec in Attendance.objects.select_related('tag').order_by('-scanned_at')[:500]:
+        uid = rec.uid
+        if uid in seen:
+            continue
+        seen.add(uid)
+        # skip if UID already assigned to someone
+        try:
+            tag = RFIDTag.objects.select_related('assigned_to').get(tag_uid=uid)
+            if tag.assigned_to:  # already assigned
+                continue
+        except RFIDTag.DoesNotExist:
+            pass
+        out.append(uid)
+        if len(out) >= limit:
+            break
+    return [(u, u) for u in out]
+
+class AdminCreateStudentForm(UserCreationForm):
+    uid_choice = forms.ChoiceField(
+        required=False,
+        label="Assign RFID UID (latest scans)",
+        choices=[],
+        help_text="Pick a recently scanned tag to assign to this student (optional)."
     )
 
-    class Meta(UserCreationForm.Meta):
-        model = CustomUser
-        fields = ('username','first_name','last_name','email','role','college','tag_uid','password1','password2')
+    class Meta:
+        model = User
+        fields = ("username", "email")  # add anything else you need
 
-    def clean_tag_uid(self):
-        uid = (self.cleaned_data['tag_uid'] or '').strip().upper().replace(' ', '')
-        if RFIDTag.objects.filter(tag_uid=uid, assigned_to__isnull=False).exists():
-            raise forms.ValidationError("This UID is already assigned to another user.")
-        return uid
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["uid_choice"].choices = [("", "— No tag —")] + recent_unassigned_uids()
+
+    def save(self, commit=True):
+        user = super().save(commit=commit)
+        uid = self.cleaned_data.get("uid_choice")
+        if uid:
+            tag, _ = RFIDTag.objects.get_or_create(tag_uid=uid)
+            tag.assigned_to = user
+            tag.save()
+        return user

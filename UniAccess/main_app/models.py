@@ -29,12 +29,12 @@ class CustomUser(AbstractUser):
         ('engineering', 'College of Engineering'),
         ('it', 'College of Information Technology'),
         ('medical_health', 'College of Medical & Health Sciences'),
-        ('admin', 'Admin'),
+        ('admin', 'Administration'),
     ]
 
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     college = models.CharField(max_length=100, choices=COLLEGE_CHOICES)
-    custom_id = models.CharField(max_length=9, unique=True, blank=True, null=True)  # e.g., S20250001
+    custom_id = models.CharField(max_length=50, unique=True, db_index=True)
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
@@ -192,8 +192,7 @@ class RFIDTag(models.Model):
     assigned_to = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        null=True, blank=True,
         related_name='rfid_tag'
     )
     created_at = models.DateTimeField(auto_now_add=True)

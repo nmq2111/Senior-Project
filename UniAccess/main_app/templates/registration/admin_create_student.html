@@ -1,0 +1,76 @@
+{% extends 'base.html' %} {% load static %} {% block styles %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+  rel="stylesheet"
+/>
+{% endblock %} {% block content %}
+<div class="login-container">
+  <div class="login-card">
+    <h2>Create Student</h2>
+    {% if messages %}
+    <ul>
+      {% for m in messages %}
+      <li>{{ m }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="row">
+        <label>Username</label>
+        {{ form.username }} {{ form.username.errors }}
+      </div>
+      <div class="row">
+        <label>Email</label>
+        {{ form.email }} {{ form.email.errors }}
+      </div>
+      <div class="row">
+        <label>Password</label>
+        {{ form.password1 }} {{ form.password1.errors }}
+      </div>
+      <div class="row">
+        <label>Confirm Password</label>
+        {{ form.password2 }} {{ form.password2.errors }}
+      </div>
+      <div class="row">
+        <label>Assign RFID UID (latest scans)</label>
+        <div class="bar">
+          {{ form.uid_choice }}
+          <button type="button" id="refresh">Refresh</button>
+        </div>
+        <div class="help">
+          Pick from the last scanned, unassigned tags. Leave as “No tag” to
+          skip.
+        </div>
+      </div>
+      <button type="submit">Create Student</button>
+    </form>
+
+    <!-- Optional: refresh the choices without reloading page -->
+    <script>
+      document.getElementById('refresh').addEventListener('click', async () => {
+        try {
+          const res = await fetch('{% url "latest_unassigned_uids" %}')
+          const data = await res.json()
+          const sel = document.querySelector('select[name="uid_choice"]')
+          sel.innerHTML = ''
+          const optNone = document.createElement('option')
+          optNone.value = ''
+          optNone.textContent = '— No tag —'
+          sel.appendChild(optNone)
+          for (const uid of data.uids) {
+            const o = document.createElement('option')
+            o.value = uid
+            o.textContent = uid
+            sel.appendChild(o)
+          }
+        } catch (e) {
+          alert('Failed to refresh UIDs')
+        }
+      })
+    </script>
+  </div>
+</div>
+
+{% endblock %}

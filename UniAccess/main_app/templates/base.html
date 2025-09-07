@@ -46,13 +46,14 @@
           <a href="{% url 'home' %}"
             ><i class="fa-solid fa-landmark"></i> Class</a
           >
-          <a href="{% url 'signup' %}"
-            ><i class="fas fa-user-plus"></i> Sign Up</a
-          >
-          {% else %}
-          <a href="{% url 'signup' %}"
-            ><i class="fas fa-user-plus"></i> Sign Up</a
-          >
+          {% if user.is_staff or user.is_superuser %}
+          <a href="{% url 'signup' %}">
+            <i class="fa-solid fa-users"></i> Create staff
+          </a>
+          <a href="{% url 'admin_create_student' %}">
+            <i class="fas fa-user-plus"></i> Create Student
+          </a>
+          {% endif %} {% else %}
           <a href="{% url 'login' %}"
             ><i class="fas fa-sign-in-alt"></i> Log In</a
           >

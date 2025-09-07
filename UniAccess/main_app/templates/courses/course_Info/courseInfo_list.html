@@ -7,7 +7,7 @@
 {% endblock %} {% block content %}
 <div class="course-container">
   <!-- TOP ACTION ICON BUTTONS -->
-  {% if user.is_authenticated and user.role == "admin" %}
+  {% if user.is_staff or user.is_superuser %}
   <div class="top-icons">
     <a
       href="{% url 'courses_list' %}"
