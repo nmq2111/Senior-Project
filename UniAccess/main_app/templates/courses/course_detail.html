@@ -11,7 +11,7 @@
   <div class="course-buttons">
     <a href="{% url 'courses_list' %}" class="btn-gray">← Back</a>
 
-    {% if user.role == 'admin' %}
+    {% if user.is_staff or user.is_superuser %}
     <a href="{% url 'course_edit' course.pk %}" class="btn-red">Edit</a>
     <a href="{% url 'course_delete' course.pk %}" class="btn-danger">Delete</a>
     {% endif %}

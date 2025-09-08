@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser , Profile , Course , CourseInfo , RFIDTag ,Attendance
+from .models import CustomUser , Profile , Course , CourseInfo , RFIDTag , RfidScan
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -51,14 +51,22 @@ class CourseInfoForm(forms.ModelForm):
 
 
 def recent_unassigned_uids(limit=25):
+    assigned_uids = set(
+        RFIDTag.objects.filter(assigned_to__isnull=False)
+        .values_list("tag_uid", flat=True)
+    )
+
     seen = set()
     out = []
-    for rec in Attendance.objects.select_related('tag').order_by('-scanned_at')[:500]:
+    for rec in RfidScan.objects.select_related("tag", "user").order_by('-created_at')[:1000]:
         uid = rec.uid
         if uid in seen:
             continue
         seen.add(uid)
         # skip if UID already assigned to someone
+        if uid in assigned_uids:
+            continue
+        
         try:
             tag = RFIDTag.objects.select_related('assigned_to').get(tag_uid=uid)
             if tag.assigned_to:  # already assigned
@@ -80,7 +88,7 @@ class AdminCreateStudentForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ("username", "email")  # add anything else you need
+        fields = ("username", "email" ,  "role", "college") 
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

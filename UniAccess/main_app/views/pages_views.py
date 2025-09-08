@@ -23,8 +23,6 @@ def signup_view(request):
     return render(request, 'registration/signup.html', {'form': form})
 
 
-
-
 @login_required
 def view_Profile(request):
     return render(request, 'Profile.html')

@@ -254,7 +254,7 @@ def register_course(request):
 
     
     enrolled = Enrollment.objects.filter(student=user)
-    enrolled_courseinfo_ids = enrolled.values_list('courseInfo__id', flat=True)
+    enrolled_courseinfo_ids = enrolled.values_list('course_info__id', flat=True)
 
     
     available_courses = CourseInfo.objects.filter(status='Yes').exclude(id__in=enrolled_courseinfo_ids)
@@ -272,18 +272,18 @@ def register_course(request):
         else:
             Enrollment.objects.create(
                 student=user,
-                course=course_info.course,
-                courseInfo=course_info
+                course_info=course_info
             )
             messages.success(request, f"Successfully registered for {course_info.course.name}")
             return redirect('register_course')
+
 
     return render(request, 'courses/register.html', {
         'available_courses': available_courses,
         'registered_courses': enrolled,
     })
 
-
+  
 
 
 @login_required

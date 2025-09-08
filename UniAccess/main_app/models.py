@@ -158,39 +158,12 @@ class Enrollment(models.Model):
 
 
 
-class Attendance(models.Model):
-    STATUS_CHOICES = [
-        ('present', 'Present'),
-        ('late', 'Late'),
-        ('absent', 'Absent'),
-    ]
-
-    tag = models.ForeignKey('RFIDTag', on_delete=models.SET_NULL, null=True, blank=True, related_name='records')
-    uid = models.CharField(max_length=100, db_index=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='attendance_records')
-    scanned_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="SCAN")
-    device_id = models.CharField(max_length=100, blank=True, null=True)  
-    source_ip = models.GenericIPAddressField(blank=True, null=True)
-    success = models.BooleanField(default=True)
-    note = models.TextField(blank=True, null=True)
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['uid', 'scanned_at']),
-        ]
-        ordering = ['-scanned_at']
-
-    def __str__(self):
-        who = self.user.username if self.user else "unknown-user"
-        return f"{self.scanned_at:%Y-%m-%d %H:%M:%S} | {self.uid} -> {who} [{self.status}]"
-
-
-
 class RFIDTag(models.Model):
     tag_uid = models.CharField(max_length=100, unique=True, db_index=True)
     assigned_to = models.OneToOneField(
         settings.AUTH_USER_MODEL,
+        to_field='custom_id',               
+        db_column='assigned_to_custom_id',  
         on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='rfid_tag'
@@ -204,13 +177,67 @@ class RFIDTag(models.Model):
 
 class RfidScan(models.Model):
     uid = models.CharField(max_length=100, db_index=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="rfid_scans",
+    )
+    tag = models.ForeignKey(
+        "main_app.RFIDTag",
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="rfid_scans",
+    )
     device_id = models.CharField(max_length=64, blank=True, null=True)
+    source_ip = models.GenericIPAddressField(blank=True, null=True)
+    status = models.CharField(max_length=10, default="SCAN")  # IN / OUT / SCAN
+    success = models.BooleanField(default=False)
+    note = models.TextField(blank=True, null=True)
     extra = models.JSONField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ["-created_at"]
+
     def __str__(self):
         local_ts = timezone.localtime(self.created_at)
-        return f"{self.uid} @ {local_ts.strftime('%Y-%m-%d %H:%M:%S')}"
+        who = self.user.username if self.user else "unknown"
+        return f"{self.uid} ({who}) @ {local_ts.strftime('%Y-%m-%d %H:%M:%S')}"
+    
+
+
+class Attendance(models.Model):
+    STATUS_CHOICES = [
+        ("PRESENT", "Present"),
+        ("ABSENT", "Absent"),
+        ("LATE", "Late"),
+    ]
+
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="attendances",
+    )
+    course_info = models.ForeignKey(    
+        "main_app.CourseInfo",
+        on_delete=models.CASCADE,
+        related_name="attendances",
+    )
+    session_date = models.DateField()   
+    first_seen = models.DateTimeField() 
+    last_seen = models.DateTimeField()   
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="PRESENT")
+    scans = models.ManyToManyField(RfidScan, blank=True, related_name="attendance_links")
+    device_id = models.CharField(max_length=64, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [("student", "course_info", "session_date")]
+        ordering = ["-session_date", "-first_seen"]
+
+    def __str__(self):
+        return f"{self.student} / {self.course_info} / {self.session_date} → {self.status}"
 
 
 class Profile(models.Model):
