@@ -47,11 +47,8 @@
             ><i class="fa-solid fa-landmark"></i> Class</a
           >
           {% if user.is_staff or user.is_superuser %}
-          <a href="{% url 'signup' %}">
-            <i class="fa-solid fa-users"></i> Create staff
-          </a>
-          <a href="{% url 'admin_create_student' %}">
-            <i class="fas fa-user-plus"></i> Create Student
+          <a href="{% url 'users_directory' %}">
+            <i class="fa-solid fa-users"></i> Userbase
           </a>
           {% endif %} {% else %}
           <a href="{% url 'login' %}"

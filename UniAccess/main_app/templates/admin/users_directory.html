@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static tz %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-danger mb-0">Users Directory</h2>
+    <div class="d-flex gap-2">
+      <a class="btn btn-danger" href="{% url 'admin_create_student' %}">+ Create Student</a>
+      <a class="btn btn-outline-danger" href="{% url 'create_staff' %}">+ Create Staff</a>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <form method="get" class="row g-2 align-items-end mb-4">
+    <div class="col-md-4">
+      <label class="form-label">Search</label>
+      <input type="text" name="q" class="form-control" value="{{ q }}" placeholder="username / name / email / ID">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">College</label>
+      <select class="form-select" name="college">
+        <option value="">All colleges</option>
+        {% for val, label in college_opts %}
+          <option value="{{ val }}" {% if college == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Year (registration)</label>
+      <select class="form-select" name="year">
+        <option value="">All years</option>
+        {% for y in year_opts %}
+          <option value="{{ y }}" {% if year|stringformat:"s" == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-outline-danger w-100">Apply</button>
+    </div>
+  </form>
+
+  <!-- Students -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header bg-danger text-white d-flex justify-content-between">
+      <strong>Students</strong>
+      <span>Total: {{ students|length }}</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Username</th>
+            <th>Full Name</th>
+            <th>Custom ID</th>
+            <th>College</th>
+            <th>Tag</th>
+            <th>Phone</th>
+            <th>Email</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in students %}
+            <tr>
+              <td>{{ u.username }}</td>
+              <td>{{ u.first_name }} {{ u.last_name }}</td>
+              <td><code>{{ u.custom_id }}</code></td>
+              <td>
+                {% for val, label in college_opts %}
+                  {% if u.college == val %}{{ label }}{% endif %}
+                {% endfor %}
+              </td>
+              <td>{% if u.rfid_tag %}<code>{{ u.rfid_tag.tag_uid }}</code>{% else %}
+                <span class="text-muted">—</span>
+              {% endif %}</td>
+              <td>{{ u.phone }}</td>
+              <td>{{ u.email }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5" class="text-center text-muted">No students found.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Staff -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-secondary text-white d-flex justify-content-between">
+      <strong>Staff</strong>
+      <span>Total: {{ staff|length }}</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Username</th>
+            <th>Full Name</th>
+            <th>Role</th>
+            <th>College</th>
+            <th>Phone</th>
+            <th>Email</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in staff %}
+            <tr>
+              <td>{{ u.username }}</td>
+              <td>{{ u.first_name }} {{ u.last_name }}</td>
+              <td><span class="badge bg-info text-dark">{{ u.role|title }}</span></td>
+              <td>
+                {% for val, label in college_opts %}
+                  {% if u.college == val %}{{ label }}{% endif %}
+                {% endfor %}
+              </td>
+              <td>{{ u.phone }}</td>
+              <td>{{ u.email }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5" class="text-center text-muted">No staff found.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

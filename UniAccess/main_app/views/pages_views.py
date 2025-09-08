@@ -1,26 +1,12 @@
-from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from ..forms import CustomUserCreationForm , ProfileForm
+from ..forms import ProfileForm
 from ..models import Profile
-
-
 
 
 def home(request):
     return render(request, 'home.html')
 
-def signup_view(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            Profile.objects.create(user=user)
-            login(request, user)
-            return redirect('home')
-    else:
-        form = CustomUserCreationForm()
-    return render(request, 'registration/signup.html', {'form': form})
 
 
 @login_required
@@ -30,7 +16,6 @@ def view_Profile(request):
 
 @login_required
 def edit_profile(request):
-    # Ensure the profile exists
     profile, created = Profile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':

@@ -1,12 +1,9 @@
-from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
-from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
-from ..forms import AdminCreateStudentForm, recent_unassigned_uids
+from ..forms import  recent_unassigned_uids
 
 
 User = get_user_model()
@@ -80,20 +77,6 @@ def find_current_courseinfo_for_student(student, ts=None):
         pass
 
     return qs.first()
-
-
-
-@staff_member_required
-def admin_create_student(request):
-    if request.method == "POST":
-        form = AdminCreateStudentForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Student created and tag assigned (if selected).")
-            return redirect(reverse("admin_create_student"))
-    else:
-        form = AdminCreateStudentForm()
-    return render(request, "registration/admin_create_student.html", {"form": form})
 
 
 @staff_member_required

@@ -284,8 +284,6 @@ def register_course(request):
     })
 
   
-
-
 @login_required
 def drop_course(request, enrollment_id):
     enrollment = get_object_or_404(Enrollment, id=enrollment_id, student=request.user)
