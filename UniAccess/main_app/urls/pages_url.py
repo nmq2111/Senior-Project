@@ -5,6 +5,7 @@ from main_app import views
 urlpatterns = [
         path('', views.home, name='home'),
         path('accounts/Profile/', views.view_Profile , name='Profile'),
-        path('accounts/profile/edit/', views.edit_profile, name='edit_profile'), 
+        path('accounts/profile/edit/', views.edit_profile, name='edit_profile'),
+        path("dashboard/admin_dashboard/", views.admin_dashboard, name="admin_dashboard"),      
 ]
 

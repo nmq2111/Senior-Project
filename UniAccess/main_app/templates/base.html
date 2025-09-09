@@ -34,22 +34,30 @@
           {% if user.is_authenticated %}
           <a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a>
           <a href="{% url 'Profile' %}"><i class="fas fa-user"></i> Profile</a>
-          <a href="{% url 'home' %}"
-            ><i class="fa-solid fa-chart-simple"></i> Dashboard</a
+          {% if user.is_authenticated %}
+          <a href="{% url 'admin_dashboard' %}"
+            ><i class="fa-solid fa-table"></i> Dashboard</a
           >
-          <a href="{% url 'courseInfo_list' %}"
+          {% endif %}
+          <a href="{% url 'courses_list' %}"
             ><i class="fas fa-book"></i> Courses</a
           >
-          <a href="{% url 'home' %}"
+          <a href="{% url 'courseInfo_list' %}"
+            ><i class="fa-solid fa-lock-open"></i> Available Courses</a
+          >
+          <a href="{% url 'attendance_list' %}"
             ><i class="fa-solid fa-clipboard-user"></i> Attendances</a
           >
-          <a href="{% url 'home' %}"
-            ><i class="fa-solid fa-landmark"></i> Class</a
-          >
           {% if user.is_staff or user.is_superuser %}
-          <a href="{% url 'users_directory' %}">
-            <i class="fa-solid fa-users"></i> Userbase
+          <a href="{% url 'users_directory' %}"
+            ><i class="fa-solid fa-users"></i> Userbase
           </a>
+          <a href="{% url 'admin_create_student' %}"
+            ><i class="fa-solid fa-graduation-cap"></i> Student Account</a
+          >
+          <a href="{% url 'create_staff' %}"
+            ><i class="fa-solid fa-user-tie"></i> Staff Accounts</a
+          >
           {% endif %} {% else %}
           <a href="{% url 'login' %}"
             ><i class="fas fa-sign-in-alt"></i> Log In</a

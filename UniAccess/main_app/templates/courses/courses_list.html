@@ -1,42 +1,96 @@
-{% extends 'base.html' %} {% load static %} {% block styles %}
-<link rel="stylesheet" href="{% static 'css/courses.css' %}" />
-{% endblock %} {% block content %}
-<div class="course-container">
-  <div class="top-icons">
-    {% if user.is_staff or user.is_superuser %}
-    <a
-      href="{% url 'courseInfo_list' %}"
-      class="icon-btn yellow"
-      title="Available Courses"
-    >
-      <i class="fa-solid fa-book"></i>
-    </a>
-    <a
-      href="{% url 'course_create' %}"
-      class="icon-btn green"
-      title="Add New Course"
-    >
-      <i class="fa-solid fa-pen-to-square"></i>
-    </a>
-    {% endif %}
+{% extends 'base.html' %}
+
+{% block styles %}
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="page-header mb-4">
+   <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-danger mb-0">Courses</h2>
+    <div class="d-flex gap-2">
+      {% if user.is_staff or user.is_superuser %}
+      <a class="btn btn-danger" href="{% url 'course_create' %}">+  Add Course</a>
+      {% endif %}
+    </div>
   </div>
 
-  <h2 class="course-title">All Courses</h2>
+  <form method="get" class="filters row g-3 align-items-end mb-4">
+    <div class="col-auto">
+      <label class="form-label">Search</label>
+      <input type="text" class="form-control" name="q" value="{{ q }}" placeholder="code or name">
+    </div>
 
-  {% if courses %}
-  <div class="course-list">
-    {% for course in courses %}
-    <a href="{% url 'course_detail' course.id %}" class="course-card">
-      <div class="course-header">
-        <div class="course-code">{{ course.code }}</div>
-        <div class="badge-status">View</div>
-      </div>
-      <p>{{ course.name }}</p>
-    </a>
-    {% endfor %}
+    <div class="col-auto">
+      <label class="form-label">College</label>
+      <select class="form-select" name="college">
+        <option value="">All colleges</option>
+        {% for val, label in college_opts %}
+          <option value="{{ val }}" {% if college == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-auto">
+      <label class="form-label">Sort</label>
+      <select class="form-select" name="order">
+        <option value="code"  {% if order == 'code' %}selected{% endif %}>Code ↑</option>
+        <option value="-code" {% if order == '-code' %}selected{% endif %}>Code ↓</option>
+        <option value="name"  {% if order == 'name' %}selected{% endif %}>Name ↑</option>
+        <option value="-name" {% if order == '-name' %}selected{% endif %}>Name ↓</option>
+      </select>
+    </div>
+
+    <div class="col-auto d-flex gap-2">
+      <button class="btn btn-outline-danger" type="submit">Apply</button>
+      <a class="btn btn-outline-secondary" href="{% url 'courses_list' %}">Clear</a>
+    </div>
+  </form>
+
+  <div class="card shadow-sm mb-5">
+    <div class="card-header bg-danger text-white d-flex justify-content-between" >
+      <strong>All Courses</strong>
+      <span class="text-light">Total: {{ courses|length }}</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 140px;">Code</th>
+            <th>Name</th>
+            <th style="width: 260px;">College</th>
+            <th style="width: 180px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in courses %}
+            <tr>
+              <td><code>{{ c.code }}</code></td>
+              <td>{{ c.name }}</td>
+              <td>
+                {% for val, label in college_opts %}
+                  {% if c.college == val %}{{ label }}{% endif %}
+                {% endfor %}
+              </td>
+                
+              <td class="d-flex gap-2">
+                {% if user.is_staff or user.is_superuser %}
+                <a href="{% url 'course_edit' c.id %}" class="btn btn-outline-danger">Edit</a>
+                <a href="{% url 'course_delete' c.id %}" class="btn btn-outline-danger">Delete</a>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="4" class="text-center text-muted">No courses found.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
-  {% else %}
-  <p class="no-courses">No courses available.</p>
-  {% endif %}
 </div>
 {% endblock %}

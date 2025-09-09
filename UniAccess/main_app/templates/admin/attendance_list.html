@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load tz %}
+{% block styles %}
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    .page-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+    .filters .form-select, .filters .form-control { min-width: 160px; }
+    .table thead th { white-space: nowrap; }
+    .nowrap { white-space: nowrap; }
+    code { font-size: .9rem; }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+   <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-danger mb-0">Attendance</h2>
+  </div>
+
+  <form method="get" class="filters row g-2 align-items-end mb-4">
+    <div class="col-auto">
+      <label class="form-label">Search Student</label>
+      <input type="text" class="form-control" name="q" value="{{ q }}" placeholder="username / name / email / ID">
+    </div>
+
+    <div class="col-auto">
+      <label class="form-label">Status</label>
+      <select class="form-select" name="status">
+        <option value="">All</option>
+        {% for val,label in status_opts %}
+          <option value="{{ val }}" {% if status == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-auto">
+      <label class="form-label">College</label>
+      <select class="form-select" name="college">
+        <option value="">All</option>
+        {% for val,label in college_opts %}
+          <option value="{{ val }}" {% if college == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-auto">
+      <label class="form-label">Teacher</label>
+      <select class="form-select" name="teacher">
+        <option value="">All</option>
+        {% for t in teacher_opts %}
+          <option value="{{ t.id }}" {% if teacher_id|stringformat:"s" == t.id|stringformat:"s" %}selected{% endif %}>
+            {% if t.first_name or t.last_name %}{{ t.first_name }} {{ t.last_name }}{% else %}{{ t.username }}{% endif %}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-auto">
+      <label class="form-label">Section</label>
+      <select class="form-select" name="course_info">
+        <option value="">All</option>
+        {% for s in section_opts %}
+          <option value="{{ s.id }}" {% if section_id|stringformat:"s" == s.id|stringformat:"s" %}selected{% endif %}>
+            {{ s.course__code }} – {{ s.class_name }} ({{ s.teacher__first_name }} {{ s.teacher__last_name|default:s.teacher__username }})
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-auto">
+      <label class="form-label">Device</label>
+      <input type="text" class="form-control" name="device_id" value="{{ device_id }}" placeholder="ESP32-LAB...">
+    </div>
+
+    <div class="col-auto">
+      <label class="form-label">From</label>
+      <input type="date" class="form-control" name="start" value="{{ start }}">
+    </div>
+    <div class="col-auto">
+      <label class="form-label">To</label>
+      <input type="date" class="form-control" name="end" value="{{ end }}">
+    </div>
+
+    <div class="col-auto">
+      <label class="form-label">Sort</label>
+      <select class="form-select" name="order">
+        <option value="-session_date"              {% if order == '-session_date' %}selected{% endif %}>Date ↓</option>
+        <option value="session_date"               {% if order == 'session_date' %}selected{% endif %}>Date ↑</option>
+        <option value="-first_seen"                {% if order == '-first_seen' %}selected{% endif %}>First seen ↓</option>
+        <option value="first_seen"                 {% if order == 'first_seen' %}selected{% endif %}>First seen ↑</option>
+        <option value="student__username"          {% if order == 'student__username' %}selected{% endif %}>Student ↑</option>
+        <option value="-student__username"         {% if order == '-student__username' %}selected{% endif %}>Student ↓</option>
+        <option value="course_info__course__code"  {% if order == 'course_info__course__code' %}selected{% endif %}>Code ↑</option>
+        <option value="-course_info__course__code" {% if order == '-course_info__course__code' %}selected{% endif %}>Code ↓</option>
+        <option value="course_info__class_name"    {% if order == 'course_info__class_name' %}selected{% endif %}>Class ↑</option>
+        <option value="-course_info__class_name"   {% if order == '-course_info__class_name' %}selected{% endif %}>Class ↓</option>
+        <option value="status"                     {% if order == 'status' %}selected{% endif %}>Status ↑</option>
+        <option value="-status"                    {% if order == '-status' %}selected{% endif %}>Status ↓</option>
+      </select>
+    </div>
+
+    <div class="col-auto d-flex gap-2">
+      <button class="btn btn-outline-danger" type="submit">Apply</button>
+      <a class="btn btn-outline-secondary" href="{% url 'attendance_list' %}">Clear</a>
+    </div>
+  </form>
+
+  <!-- Table -->
+  <div class="card shadow-sm mb-5">
+    <div class="card-header bg-danger text-white d-flex justify-content-between">
+      <strong>Attendance Records</strong>
+      <span class="text-muted">Total: {{ records|length }}</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover mb-0">
+        <thead>
+          <tr>
+            <th class="nowrap">Date</th>
+            <th>Student</th>
+            <th>Code</th>
+            <th>Teacher</th>
+            <th class="nowrap">Class</th>
+            <th class="nowrap">First seen</th>
+            <th class="nowrap">Last seen</th>
+            <th class="nowrap">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in records %}
+          <tr>
+            <td class="nowrap">{{ a.session_date }}</td>
+            <td>
+              {{ a.student.custom_id }}
+              <div class="text-muted small">
+                {{ a.student.first_name }} {{ a.student.last_name }}
+                {% if a.student.custom_id %} · <code>{{ a.student.username }}</code>{% endif %}
+              </div>
+            </td>
+            <td><code>{{ a.course_info.course.code }}</code></td>
+            <td>
+              {% with t=a.course_info.teacher %}
+                {% if t.first_name or t.last_name %}
+                  {{ t.first_name }} {{ t.last_name }}
+                {% else %}
+                  {{ t.username }}
+                {% endif %}
+              {% endwith %}
+            </td>
+            <td class="nowrap">{{ a.course_info.class_name }}</td>
+            <td class="nowrap">{{ a.first_seen|localtime|date:"Y-m-d H:i" }}</td>
+            <td class="nowrap">{{ a.last_seen|localtime|date:"Y-m-d H:i" }}</td>
+            <td>
+              {% if a.status == "PRESENT" %}
+                <span class="badge text-bg-success">Present</span>
+              {% elif a.status == "LATE" %}
+                <span class="badge text-bg-warning">Late</span>
+              {% else %}
+                <span class="badge text-bg-secondary">Absent</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="9" class="text-center text-muted">No records found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

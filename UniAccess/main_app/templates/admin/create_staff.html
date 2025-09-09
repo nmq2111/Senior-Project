@@ -15,10 +15,10 @@
 >
   <div
     class="shadow-lg p-5 bg-white rounded"
-    style="width: 100%; max-width: 500px; border-radius: 20px"
+    style="width: 100%; max-width: 900px; border-radius: 20px"
   >
     <div class="text-center mb-4">
-      <h2 class="fw-bold text-danger">Create new account</h2>
+      <h2 class="fw-bold text-danger">Create new Account</h2>
     </div>
 
     {% if messages %} {% for message in messages %}
@@ -30,22 +30,71 @@
     {% endif %}
 
     <form method="post" novalidate>
-      {% csrf_token %}
+      {% csrf_token %} {% csrf_token %} {{ form.non_field_errors }}
+
       <div class="row">
-        {% for field in form %}
-        <div class="mb-3 col-md-12">
-          <label for="{{ field.id_for_label }}" class="form-label"
-            >{{ field.label }}</label
-          >
-          {{ field }} {% if field.help_text %}
-          <div class="form-text">{{ field.help_text }}</div>
-          {% endif %} {% if field.errors %}
-          <div class="text-danger small">{{ field.errors.0 }}</div>
-          {% endif %}
-        </div>
-        {% endfor %}
+        <label>Username</label>
+        {{ form.username }} {% if form.username.errors %}
+        <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+        {% endif %}
       </div>
-      <button type="submit" class="btn-login w-100">Sign Up</button>
+
+      <div class="row">
+        <label>First Name</label>
+        {{ form.first_name }} {% if form.first_name.errors %}
+        <div class="text-danger small mt-1">{{ form.first_name.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="row">
+        <label>Last Name</label>
+        {{ form.last_name }} {% if form.last_name.errors %}
+        <div class="text-danger small mt-1">{{ form.last_name.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="row">
+        <label>Email</label>
+        {{ form.email }} {% if form.email.errors %}
+        <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="row">
+        <label>Phone</label>
+        {{ form.phone }} {% if form.phone.errors %}
+        <div class="text-danger small mt-1">{{ form.phone.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="row">
+        <label>Password</label>
+        {{ form.password1 }} {% if form.password1.errors %}
+        <div class="text-danger small mt-1">{{ form.password1.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="row">
+        <label>Confirm Password</label>
+        {{ form.password2 }} {% if form.password2.errors %}
+        <div class="text-danger small mt-1">{{ form.password2.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="row">
+        <label>Role</label>
+        {{ form.role }} {% if form.role.errors %}
+        <div class="text-danger small mt-1">{{ form.role.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="row">
+        <label>College</label>
+        {{ form.college }} {% if form.college.errors %}
+        <div class="text-danger small mt-1">{{ form.college.errors }}</div>
+        {% endif %}
+      </div>
+      <div><button type="submit" class="btn-login w-100">Sign Up</button></div>
     </form>
   </div>
 </div>
