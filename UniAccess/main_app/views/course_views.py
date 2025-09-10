@@ -79,6 +79,7 @@ def courseInfo_list(request):
     college      = (request.GET.get("college") or "").strip()
     year         = (request.GET.get("year") or "").strip()
     semester     = (request.GET.get("semester") or "").strip()
+    section      = (request.GET.get("section") or "").strip()
     status       = (request.GET.get("status") or "").strip()
     days         = (request.GET.get("days") or "").strip()
     session_type = (request.GET.get("session_type") or "").strip()
@@ -110,6 +111,13 @@ def courseInfo_list(request):
             pass
     if semester:
         qs = qs.filter(semester=semester)
+
+    if section:
+        try:
+            qs = qs.filter(section=int(section))
+        except ValueError:
+            pass
+        
     if status:
         qs = qs.filter(status=status)
     if days:
@@ -129,6 +137,7 @@ def courseInfo_list(request):
         "course__code", "-course__code",
         "course__name", "-course__name",
         "class_name", "-class_name",
+        "section", "-section",  
         "start_time", "-start_time",
         "year", "-year",
         "semester", "-semester",
@@ -202,7 +211,7 @@ class CourseInfoDelete(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("courseInfo_list")
 
 
-# ------------------ Registration ------------------
+
 
 @login_required
 def register_course(request):

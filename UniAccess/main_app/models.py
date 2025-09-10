@@ -97,6 +97,10 @@ class CourseInfo(models.Model):
     )
     year = models.PositiveIntegerField(default=current_year)
     semester = models.CharField(max_length=10, choices=SEMESTER_CHOICES)
+    section = models.PositiveIntegerField(
+        default=1,
+        validators=[MinValueValidator(1)],
+    )
     class_name = models.CharField(max_length=100)
     capacity = models.PositiveIntegerField(validators=[MinValueValidator(5)])
     session_type = models.CharField(max_length=10, choices=SESSION_TYPE_CHOICES)
@@ -112,7 +116,7 @@ class CourseInfo(models.Model):
                 name='courseinfo_end_after_start'
             ),
             models.UniqueConstraint(
-                fields=['course', 'teacher', 'year', 'semester', 'class_name'],
+                fields=['course', 'year', 'semester', 'section'],
                 name='unique_section_per_term_teacher'
             ),
         ]

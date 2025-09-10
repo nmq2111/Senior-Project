@@ -89,6 +89,7 @@
             <th class="nowrap">Code</th>
             <th>Course</th>
             <th class="nowrap">Year / Sem</th>
+            <th class="nowrap">Section</th>
             <th class="nowrap">Status</th>
             <th class="nowrap">Actions</th>
           </tr>
@@ -99,6 +100,7 @@
             <td><code>{{ ci.course.code }}</code></td>
             <td>{{ ci.course.name }}</td>
             <td>{{ ci.year }} / {{ ci.get_semester_display }}</td>
+            <td class="nowrap">{{ ci.section }}</td>
             <td>
               {% if ci.status == "Yes" %}
                 <span class="badge bg-danger">Available</span>

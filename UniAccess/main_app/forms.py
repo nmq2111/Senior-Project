@@ -10,10 +10,10 @@ User = get_user_model()
 
 class CustomUserCreationForm(UserCreationForm):
     ROLE_CHOICES = [
+        ('teacher', 'Teacher'),
         ('admin', 'Admin'),
-        ('teacher', 'Teacher'),     
     ]
-    role = forms.ChoiceField(choices=ROLE_CHOICES, widget=forms.Select(attrs={'class': 'form-select'}))
+    role = forms.ChoiceField(choices=ROLE_CHOICES)
 
     phone = forms.CharField(
         required=True,
@@ -22,22 +22,31 @@ class CustomUserCreationForm(UserCreationForm):
         widget=forms.TextInput(attrs={"placeholder": "+973 3xxxxxxx"})
     )
 
-    class Meta:
-        model = CustomUser
-        fields = ('username', 'first_name' , 'last_name', 'email', 'role', 'college' , 'password1', 'password2')
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ("username", "first_name", "last_name", "email",
+                  "password1", "password2", "role", "college")
+
+    def clean(self):
+        cleaned = super().clean()
+        role = cleaned.get("role")
+        if role not in {"teacher", "admin"}:
+            self.add_error("role", "Role must be Teacher or Admin.")
+        return cleaned
 
     @transaction.atomic
     def save(self, commit=True):
-        user = super().save(commit=commit)  
-        user.role = self.cleaned_data.get("role")
-        user.college = self.cleaned_data.get("college")
+        user = super().save(commit=False)
+        role = self.cleaned_data["role"]
+        user.role = role
+        user.college = self.cleaned_data["college"]
+        user.is_staff = True
+        user.is_superuser = (role == "admin")
+
         if commit:
-            user.save(update_fields=["role", "college"])
-        phone = self.cleaned_data.get("phone")
-        profile, _ = Profile.objects.get_or_create(user=user)
-        profile.phone = phone
-        profile.save()
-    
+            user.save()
+            Profile.objects.get_or_create(user=user)
+
         return user
 
 
@@ -62,6 +71,7 @@ class CourseInfoForm(forms.ModelForm):
             'teacher',
             'year',
             'semester',
+            'section',
             'class_name',
             'capacity',
             'session_type',
@@ -70,7 +80,6 @@ class CourseInfoForm(forms.ModelForm):
             'start_time',
             'end_time'
         ]
-
 
 
 def recent_unassigned_uids(limit=25):

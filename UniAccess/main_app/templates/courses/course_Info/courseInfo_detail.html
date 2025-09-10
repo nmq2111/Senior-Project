@@ -10,7 +10,7 @@
     <p><strong>Semester:</strong> {{ course.get_semester_display }}</p>
     <p><strong>College:</strong> {{ course.course.get_college_display }}</p>
     <p><strong>Class:</strong> {{ course.class_name }}</p>
-
+    <p><strong>Section:</strong> {{ course.section }}</p>
     <p><strong>Capacity:</strong> {{ course.capacity }}</p>
     <p>
       <strong>enrollments:</strong> {{ course.enrollments.count|default:0 }}

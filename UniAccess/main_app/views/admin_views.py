@@ -2,11 +2,12 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.db.models import Q
-from ..models import Profile
+from ..models import Profile , Attendance, CourseInfo, Course
 from django.shortcuts import render , redirect
 from ..forms import CustomUserCreationForm, AdminCreateStudentForm
 from django.contrib.auth import login
 from django.urls import reverse
+from datetime import datetime
 
 User = get_user_model()
 
@@ -75,9 +76,8 @@ def create_staff(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            Profile.objects.create(user=user)
-            login(request, user)
-            return redirect('home')
+            messages.success(request, f"Staff account '{user.username}' created.")
+            return redirect('users_directory')
     else:
         form = CustomUserCreationForm()
     return render(request, 'admin/create_staff.html', {'form': form})
@@ -97,16 +97,6 @@ def admin_create_student(request):
 
 
 
-
-# main_app/views/admin_views.py
-from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import get_user_model
-from django.db.models import Q
-from django.shortcuts import render
-from datetime import datetime
-from ..models import Attendance, CourseInfo, Course
-
-User = get_user_model()
 
 @staff_member_required
 def attendance_list(request):
