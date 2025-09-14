@@ -1,0 +1,27 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container py-4" style="max-width: 680px">
+  <h3>Add/Drop Control</h3>
+  {% for m in messages %}
+  <div class="alert alert-{{ m.tags }}">{{ m }}</div>
+  {% endfor %}
+  <div class="mb-3">
+    <strong>Effective state:</strong>
+    {% if effective %}<span class="text-success">OPEN</span>{% else %}<span
+      class="text-danger"
+      >CLOSED</span
+    >{% endif %}
+  </div>
+
+  <form method="post" class="card card-body">
+    {% csrf_token %}
+    <div class="d-flex gap-2">
+      <button name="is_open" value="1" class="btn btn-success" type="submit">
+        Force OPEN
+      </button>
+      <button name="is_open" value="0" class="btn btn-danger" type="submit">
+        Force CLOSED
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

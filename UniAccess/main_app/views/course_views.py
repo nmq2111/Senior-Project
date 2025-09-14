@@ -9,10 +9,14 @@ from django.contrib import messages
 from ..models import Course, CourseInfo, Enrollment
 from ..forms import CourseForm, CourseInfoForm
 from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.core.cache import cache
+from datetime import datetime
 
 
 User = get_user_model()
 
+MAX_COURSES_PER_STUDENT = 6
 
 
 
@@ -215,37 +219,241 @@ class CourseInfoDelete(LoginRequiredMixin, DeleteView):
 
 @login_required
 def register_course(request):
+    cfg = getattr(settings, "REGISTRATION_CONTROL", {})
+    default_open = bool(cfg.get("DEFAULT_OPEN", True))
+    open_from = _parse_dt(cfg.get("OPEN_FROM"))
+    open_until = _parse_dt(cfg.get("OPEN_UNTIL"))
+
+    override = cache.get("registration:is_open")
+    if override is not None:
+        return bool(override)
+
+    now = timezone.now()
+    if open_from and now < open_from:
+        return False
+    if open_until and now > open_until:
+        return False
+    return default_open
+
+
+def _times_overlap(a_start, a_end, b_start, b_end):
+    """Time overlap if intervals intersect."""
+    return (a_start < b_end) and (a_end > b_start)
+
+
+def _parse_dt(s):
+    """Parse ISO datetime like '2025-09-01T00:00:00' to aware dt; return None on failure."""
+    if not s:
+        return None
+    try:
+        return timezone.make_aware(datetime.fromisoformat(s))
+    except Exception:
+        return None
+
+# ---------- View ----------
+@login_required
+def register_course(request):
     user = request.user
 
     if user.role != "student":
         messages.error(request, "Only students can register for courses.")
         return redirect("home")
 
-    enrolled = Enrollment.objects.filter(student=user)
-    enrolled_courseinfo_ids = enrolled.values_list("course_info__id", flat=True)
+    reg_open = is_registration_open()
 
-    available_courses = CourseInfo.objects.filter(status="Yes").exclude(id__in=enrolled_courseinfo_ids)
+    # ----- Already registered -----
+    enrolled_qs = (
+        Enrollment.objects
+        .filter(student=user)
+        .select_related("course_info", "course_info__course", "course_info__teacher")
+    )
+    enrolled = list(enrolled_qs)
+    enrolled_courseinfo_ids = [e.course_info_id for e in enrolled]
 
+    # For rule: one section per course per term
+    enrolled_term_course_keys = {
+        (e.course_info.course_id, e.course_info.year, e.course_info.semester)
+        for e in enrolled
+    }
+
+    # For clash checks, keep student's current sections by (year, semester)
+    enrolled_by_term = {}
+    for e in enrolled:
+        key = (e.course_info.year, e.course_info.semester)
+        enrolled_by_term.setdefault(key, []).append(e.course_info)
+
+    # ----- Filters / sort for available sections (view-only) -----
+    q            = (request.GET.get("q") or "").strip()
+    college      = (request.GET.get("college") or "").strip()          # optional extra filter
+    year         = (request.GET.get("year") or "").strip()
+    semester     = (request.GET.get("semester") or "").strip()
+    days         = (request.GET.get("days") or "").strip()
+    session_type = (request.GET.get("session_type") or "").strip()
+    teacher_id   = (request.GET.get("teacher") or "").strip()
+    order        = (request.GET.get("order") or "course__code,section").strip()
+
+    qs = (
+        CourseInfo.objects
+        .select_related("course", "teacher")
+        .annotate(enrolled_count=Count("enrollments"))
+        .exclude(id__in=enrolled_courseinfo_ids)                 # don't show what they already joined
+        .filter(course__college__in=[user.college, "general"])   # student's college or general
+        .filter(status__in=["Yes", "Available"])                 # open
+        .filter(enrolled_count__lt=F("capacity"))                # not full
+    )
+
+    if q:
+        qs = qs.filter(
+            Q(course__code__icontains=q) |
+            Q(course__name__icontains=q) |
+            Q(class_name__icontains=q) |
+            Q(teacher__username__icontains=q) |
+            Q(teacher__first_name__icontains=q) |
+            Q(teacher__last_name__icontains=q)
+        )
+    if college:
+        qs = qs.filter(course__college=college)
+    if year:
+        try:
+            qs = qs.filter(year=int(year))
+        except ValueError:
+            pass
+    if semester:
+        qs = qs.filter(semester=semester)
+    if days:
+        qs = qs.filter(days=days)
+    if session_type:
+        qs = qs.filter(session_type=session_type)
+    if teacher_id:
+        try:
+            qs = qs.filter(teacher__id=int(teacher_id))
+        except ValueError:
+            pass
+
+    # Sort (supports comma-separated list)
+    allowed = {
+        "course__code", "-course__code",
+        "course__name", "-course__name",
+        "section", "-section",
+        "class_name", "-class_name",
+        "teacher__username", "-teacher__username",
+        "start_time", "-start_time",
+        "year", "-year",
+        "semester", "-semester",
+    }
+    order_by = []
+    for part in [p.strip() for p in order.split(",") if p.strip()]:
+        order_by.append(part if part in allowed else "course__code")
+    if not order_by:
+        order_by = ["course__code", "section"]
+
+    # annotate UI flags (optional)
+    available_courses = list(qs.order_by(*order_by))
+    for ci in available_courses:
+        ci._duplicate_course_term = (ci.course_id, ci.year, ci.semester) in enrolled_term_course_keys
+        term_key = (ci.year, ci.semester)
+        ci._time_clash = False
+        if term_key in enrolled_by_term:
+            for other in enrolled_by_term[term_key]:
+                if other.days == ci.days and _times_overlap(ci.start_time, ci.end_time, other.start_time, other.end_time):
+                    ci._time_clash = True
+                    break
+        reasons = []
+        if ci._duplicate_course_term: reasons.append("Already registered in this course this term")
+        if ci._time_clash: reasons.append("Time clash with your schedule")
+        ci._block_reason = " · ".join(reasons)
+
+    # ----- Handle registration (server-side enforcement) -----
     if request.method == "POST":
-        course_info_id = request.POST.get("course_info_id")
-        course_info = get_object_or_404(CourseInfo, id=course_info_id)
-
-        if enrolled.count() >= 6:
-            messages.error(request, "you reached the maximum number of courses")
-        elif course_info.id in enrolled_courseinfo_ids:
-            messages.warning(request, "You are already registered in this course.")
-        elif course_info.is_full:
-            messages.warning(request, "Course is full.")
-        else:
-            Enrollment.objects.create(student=user, course_info=course_info)
-            messages.success(request, f"Successfully registered for {course_info.course.name}")
+        if not reg_open:
+            messages.warning(request, "Add/Drop period is closed.")
             return redirect("register_course")
 
-    return render(
-        request,
-        "courses/register.html",
-        {"available_courses": available_courses, "registered_courses": enrolled},
+        course_info_id = request.POST.get("course_info_id")
+        ci = get_object_or_404(CourseInfo, id=course_info_id)
+
+        # Visibility constraints (re-check)
+        if ci.course.college not in (user.college, "general"):
+            messages.warning(request, "This section is not in your college.")
+            return redirect("register_course")
+        if ci.status not in ("Yes", "Available") or ci.enrollments.count() >= ci.capacity:
+            messages.warning(request, "This section is not available.")
+            return redirect("register_course")
+
+        # Max load
+        if Enrollment.objects.filter(student=user).count() >= MAX_COURSES_PER_STUDENT:
+            messages.error(request, "You reached the maximum number of courses.")
+            return redirect("register_course")
+
+        # Already in this exact section?
+        if Enrollment.objects.filter(student=user, course_info=ci).exists():
+            messages.warning(request, "You are already registered in this section.")
+            return redirect("register_course")
+
+        # Rule 1: one section per course per term
+        if Enrollment.objects.filter(
+            student=user,
+            course_info__course_id=ci.course_id,
+            course_info__year=ci.year,
+            course_info__semester=ci.semester,
+        ).exists():
+            messages.warning(request, "You already have a section of this course for this term.")
+            return redirect("register_course")
+
+        # Rule 2: timetable clash (same term, same day bucket, overlapping time)
+        clashes = Enrollment.objects.filter(
+            student=user,
+            course_info__year=ci.year,
+            course_info__semester=ci.semester,
+            course_info__days=ci.days,
+            course_info__start_time__lt=ci.end_time,
+            course_info__end_time__gt=ci.start_time,
+        ).exists()
+        if clashes:
+            messages.warning(request, "This section conflicts with another registered section.")
+            return redirect("register_course")
+
+        # All good → register
+        Enrollment.objects.create(student=user, course_info=ci)
+        messages.success(
+            request,
+            f"Registered: {ci.course.code} (Section {getattr(ci, 'section', '—')}) — "
+            f"{ci.get_days_display()} {ci.start_time.strftime('%H:%M')}–{ci.end_time.strftime('%H:%M')}"
+        )
+        return redirect("register_course")
+
+    # Filter options (if your template needs them)
+    teacher_opts = list(
+        User.objects.filter(role="teacher")
+        .order_by("first_name", "last_name", "username")
+        .values("id", "first_name", "last_name", "username")
     )
+    year_opts = list(
+        CourseInfo.objects.order_by("-year").values_list("year", flat=True).distinct()
+    )
+
+    context = {
+        "available_courses": available_courses,
+        "registered_courses": enrolled,
+
+        "q": q, "college": college, "year": year, "semester": semester,
+        "days": days, "session_type": session_type, "teacher_id": teacher_id,
+        "order": ",".join(order_by),
+
+        "max_courses": MAX_COURSES_PER_STUDENT,
+        "college_opts": Course.COLLEGE_CHOICES,
+        "semester_opts": CourseInfo.SEMESTER_CHOICES,
+        "days_opts": CourseInfo.DAYS_CHOICES,
+        "session_type_opts": CourseInfo.SESSION_TYPE_CHOICES,
+        "teacher_opts": teacher_opts, "year_opts": year_opts,
+
+        "reg_open": reg_open,   # for disabling buttons in template
+    }
+    return render(request, "courses/register.html", context)
+
+
+def _times_overlap(a_start, a_end, b_start, b_end):
+    return (a_start < b_end) and (a_end > b_start)
 
 
 @login_required
@@ -254,3 +462,33 @@ def drop_course(request, enrollment_id):
     if request.method == "POST":
         enrollment.delete()
     return redirect("register_course")
+
+
+
+
+def _parse_dt(s):
+    if not s:
+        return None
+    try:
+        # Accept "YYYY-MM-DDTHH:MM:SS"
+        return timezone.make_aware(datetime.fromisoformat(s))
+    except Exception:
+        return None
+
+def is_registration_open():
+    cfg = getattr(settings, "REGISTRATION_CONTROL", {})
+    default_open = bool(cfg.get("DEFAULT_OPEN", True))
+    open_from = _parse_dt(cfg.get("OPEN_FROM"))
+    open_until = _parse_dt(cfg.get("OPEN_UNTIL"))
+
+    # cache override wins if present: key = "registration:is_open"
+    override = cache.get("registration:is_open")
+    if override is not None:
+        return bool(override)
+
+    now = timezone.now()
+    if open_from and now < open_from:
+        return False
+    if open_until and now > open_until:
+        return False
+    return default_open

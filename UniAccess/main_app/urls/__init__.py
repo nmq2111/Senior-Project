@@ -8,6 +8,7 @@ urlpatterns = [
     path("", include("main_app.urls.attendance_urls")),
     path("", include("main_app.urls.attendance_api")),
     path("", include("main_app.urls.admin_urls")),
+    path("", include("main_app.urls.teacher_urls")),
 ]
 
 

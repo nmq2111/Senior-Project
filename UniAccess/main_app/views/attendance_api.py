@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from main_app.views.attendance_views import find_current_courseinfo_for_student, _weekday_tokens
+from main_app.views.attendance_views import find_current_courseinfo_for_student, _weekday_tokens , maybe_update_warning_and_notify
 from ..models import RFIDTag, RfidScan
 
 
@@ -264,6 +264,9 @@ def rfid_scan(request):
         att.device_id = device_id or att.device_id
         att.save()
 
+
+        calc, notified = maybe_update_warning_and_notify(user, ci)
+
     except Exception as e:
         return JsonResponse(
             {
@@ -284,28 +287,40 @@ def rfid_scan(request):
             status=200,
         )
 
+    
     return JsonResponse(
-        {
-            "ok": True,
-            "known_tag": True,
-            "uid": uid,
-            "user": user.username,
-            "display_name": display_name,
-            "course_info": str(ci),
-            "session_date": str(session_date),
-            "attendance_id": att.id,
-            "created": created,
-            "status": att.status,
-            "note": ("Marked present" if created and att.status == "PRESENT"
-                     else ("Marked late" if created and att.status == "LATE" else "Updated")),
-            "lcd_line1": f"Welcome {display_name}",
-            "lcd_line2": f"{att.status.title()}",
-            "debug": {
-                "now_local": timezone.localtime(ts).strftime("%Y-%m-%d %H:%M:%S"),
-                "course_info_id": getattr(ci, "id", None),
-                "start_time": str(getattr(ci, "start_time", "")),
-                "end_time": str(getattr(ci, "end_time", "")),
-            },
+    {
+        "ok": True,
+        "known_tag": True,
+        "uid": uid,
+        "user": user.username,
+        "display_name": display_name,
+        "course_info": str(ci),
+        "session_date": str(session_date),
+        "attendance_id": att.id,
+        "created": created,
+        "status": att.status,
+        "note": ("Marked present" if created and att.status == "PRESENT"
+                 else ("Marked late" if created and att.status == "LATE" else "Updated")),
+        "lcd_line1": f"Welcome {display_name}",
+        "lcd_line2": f"{att.status.title()}",
+        "policy": {
+            "present": calc.present,
+            "late": calc.late,
+            "absent": calc.absent,
+            "late_as_absence": calc.late_as_absence,
+            "absence_equiv": calc.absence_equiv,
+            "planned": calc.planned,
+            "pct_absence": round(calc.pct_absence * 100, 1),
+            "level": calc.level,
+            "notified": notified,
         },
-        status=200,
-    )
+        "debug": {
+            "now_local": timezone.localtime(ts).strftime("%Y-%m-%d %H:%M:%S"),
+            "course_info_id": getattr(ci, "id", None),
+            "start_time": str(getattr(ci, "start_time", "")),
+            "end_time": str(getattr(ci, "end_time", "")),
+        },
+    },
+    status=200,
+)

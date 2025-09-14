@@ -34,11 +34,56 @@
           {% if user.is_authenticated %}
           <a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a>
           <a href="{% url 'Profile' %}"><i class="fas fa-user"></i> Profile</a>
-          {% if user.is_authenticated %}
+
+          {% if user.is_authenticated and user.role == "student" %}
+
+          <a href="{% url 'student_dashboard' %}"
+            ><i class="fa-solid fa-table"></i> My Dashboard</a
+          >
+          <a href="{% url 'courses_list' %}"
+            ><i class="fas fa-book"></i> Courses</a
+          >
+          <a href="{% url 'courseInfo_list' %}"
+            ><i class="fa-solid fa-lock-open"></i> Available Courses</a
+          >
+
+          <a href="{% url 'register_course' %}"
+            ><i class="fas fa-book"></i> Registration
+          </a>
+
+          <a href="{% url 'student_attendance' %}"
+            ><i class="fa-solid fa-clipboard-user"></i> Attendances</a
+          >
+
+          {% endif %} {% if user.is_authenticated and user.role == "teacher" %}
+
+          <a href="{% url 'teacher_dashboard' %}"
+            ><i class="fa-solid fa-table"></i> My Dashboard</a
+          >
+
+          <a href="{% url 'courses_list' %}"
+            ><i class="fas fa-book"></i> Courses</a
+          >
+          <a href="{% url 'courseInfo_list' %}"
+            ><i class="fa-solid fa-lock-open"></i> Available Courses</a
+          >
+
+          <a href="{% url 'teacher_attendance_list' %}"
+            ><i class="fa-solid fa-clipboard-user"></i> Attendances</a
+          >
+
+          <a href="{% url 'attendance_take_C' %}">
+            <i class="fa-solid fa-square-check"></i> Take Attendances</a
+          >
+
+          <a href="{% url 'teacher_userbase' %}"
+            ><i class="fa-solid fa-users"></i> Students
+          </a>
+
+          {% endif %} {% if user.role == "admin" or user.is_superuser %}
           <a href="{% url 'admin_dashboard' %}"
             ><i class="fa-solid fa-table"></i> Dashboard</a
           >
-          {% endif %}
           <a href="{% url 'courses_list' %}"
             ><i class="fas fa-book"></i> Courses</a
           >
@@ -48,7 +93,6 @@
           <a href="{% url 'attendance_list' %}"
             ><i class="fa-solid fa-clipboard-user"></i> Attendances</a
           >
-          {% if user.is_staff or user.is_superuser %}
           <a href="{% url 'users_directory' %}"
             ><i class="fa-solid fa-users"></i> Userbase
           </a>

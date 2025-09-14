@@ -1,96 +1,220 @@
 {% extends 'base.html' %} {% load static %} {% block styles %}
-<link rel="stylesheet" href="{% static 'css/courses.css' %}" />
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+/>
+<style>
+  .nowrap {
+    white-space: nowrap;
+  }
+  /* make code labels pop a bit */
+  table code {
+    background: #f6f8fa;
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+</style>
 {% endblock %} {% block content %}
-<div class="course-container">
-  <h2 class="course-title">Course Registration</h2>
-
-  {% if messages %}
-  <ul class="messages">
-    {% for message in messages %}
-    <li class="{{ message.tags }}">{{ message }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-
-  <h3 class="section-title">Available Courses</h3>
-  {% if available_courses %}
-  <div class="course-list">
-    {% for course in available_courses %}
-    <div class="course-card">
-      <div class="course-header">
-        <span class="course-code">{{ course.course.code }}</span>
-        <span class="badge-status">{{ course.get_status_display }}</span>
-      </div>
-      <div class="course-info">
-        <p><strong>Course Name:</strong> {{ course.course.name }}</p>
-        <p><strong>Teacher:</strong> {{ course.teacher.get_full_name }}</p>
-        <p><strong>Year:</strong> {{ course.year }}</p>
-        <p><strong>Semester:</strong> {{ course.get_semester_display }}</p>
-        <p><strong>College:</strong> {{ course.course.get_college_display }}</p>
-        <p><strong>Class:</strong> {{ course.class_name }}</p>
-
-        <p><strong>Capacity:</strong> {{ course.capacity }}</p>
-        <p>
-          <strong>enrollments:</strong> {{ course.enrollments.count|default:0 }}
-        </p>
-
-        <p>
-          <strong>Session Type:</strong> {{ course.get_session_type_display }}
-        </p>
-
-        <p><strong>Days:</strong> {{ course.get_days_display }}</p>
-        <p><strong>Status:</strong> {{ course.get_status_display }}</p>
-        <p><strong>Start Time:</strong> {{ course.start_time }}</p>
-        <p><strong>End Time:</strong> {{ course.end_time }}</p>
-      </div>
-      <form method="POST" class="form-actions">
-        {% csrf_token %}
-        <input type="hidden" name="course_info_id" value="{{ course.id }}" />
-        <button type="submit" class="btn-red">Register</button>
-      </form>
-    </div>
-    {% endfor %}
+<div class="page-header mb-4">
+  <h2 class="text-danger mb-0">Course Registration</h2>
+  <div class="text-danger mb-0">
+    You’ve registered {{ registered_courses|length }}/{{ max_courses }}
   </div>
-  {% else %}
-  <p class="no-courses">
-    No available courses or you reached the maximum limit.
-  </p>
-  {% endif %}
+</div>
 
-  <hr />
+{% if messages %}
+<div class="mb-3">
+  {% for message in messages %}
+  <div class="alert alert-{{ message.tags|default:'info' }} mb-2">
+    {{ message }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
 
-  <h3 class="section-title">Your Registered Courses</h3>
-  {% if registered_courses %}
-  <ul class="course-list">
-    {% for reg in registered_courses %}
-    <li class="course-card">
-      <strong>{{ reg.course.code }} - {{ reg.course.name }} </strong>
-      <p>
-        Time :{{ reg.course_info.start_time }} : {{ reg.course_info.end_time }}
-      </p>
-      <p>Days :{{ reg.course_info.get_days_display }}</p>
+<!-- Filters -->
+<form method="get" class="filters row g-2 align-items-end mb-4">
+  <div class="col-auto">
+    <label class="form-label">Search</label>
+    <input
+      type="text"
+      class="form-control"
+      name="q"
+      value="{{ q }}"
+      placeholder="code / name / class / teacher"
+    />
+  </div>
 
-      <p>{{ reg.course.get_days_display }}</p>
-      <form
-        method="POST"
-        action="{% url 'drop_course' reg.id %}"
-        class="form-actions"
-        style="margin-top: 10px"
+  <div class="col-auto d-flex align-items-center gap-2">
+    <div class="form-check">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        id="available_only"
+        name="available_only"
+        value="1"
+        {%
+        if
+        available_only
+        %}checked{%
+        endif
+        %}
+      />
+      <label class="form-check-label" for="available_only"
+        >Available only</label
       >
-        {% csrf_token %}
-        <button
-          type="submit"
-          class="btn-gray"
-          onclick="return confirm('Are you sure you want to drop this course?')"
-        >
-          Drop
-        </button>
-      </form>
-    </li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <p class="no-courses">You have not registered for any courses yet.</p>
-  {% endif %}
+    </div>
+    <button class="btn btn-outline-danger" type="submit">Apply</button>
+    <a class="btn btn-outline-secondary" href="{% url 'register_course' %}"
+      >Clear</a
+    >
+  </div>
+</form>
+
+<!-- Available sections table -->
+<div class="card shadow-sm mb-5">
+  <div class="card-header bg-danger text-white d-flex justify-content-between">
+    <strong>Available Sections</strong>
+    <span class="text-white-50">Total: {{ available_courses|length }}</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Course / Class</th>
+          <th class="nowrap">Section</th>
+          <th>Teacher</th>
+          <th class="nowrap">Days</th>
+          <th class="nowrap">Time</th>
+          <th class="nowrap">Type</th>
+          <th class="nowrap">Year / Sem</th>
+          <th class="nowrap">Seats</th>
+          <th class="nowrap">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ci in available_courses %}
+        <tr>
+          <td><code>{{ ci.course.code }}</code></td>
+          <td>
+            {{ ci.course.name }}
+            <div class="text-muted small">{{ ci.class_name }}</div>
+          </td>
+          <td class="nowrap">#{{ ci.section|default:"—" }}</td>
+          <td>{% firstof ci.teacher.get_full_name ci.teacher.username %}</td>
+          <td class="nowrap">{{ ci.get_days_display }}</td>
+          <td class="nowrap">
+            {{ ci.start_time|time:"H:i" }}–{{ ci.end_time|time:"H:i" }}
+          </td>
+          <td class="nowrap">{{ ci.get_session_type_display }}</td>
+          <td class="nowrap">{{ ci.year }} / {{ ci.get_semester_display }}</td>
+          <td class="nowrap">{{ ci.enrolled_count }}/{{ ci.capacity }}</td>
+          <td class="nowrap">
+            <form method="post" class="d-inline">
+              {% csrf_token %}
+              <input type="hidden" name="course_info_id" value="{{ ci.id }}" />
+              <button
+                type="submit"
+                class="btn btn-sm btn-danger"
+                {%
+                if
+                ci.status
+                !="Yes"
+                and
+                ci.status
+                !="Available"
+                %}disabled{%
+                endif
+                %}
+              >
+                Register
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="10" class="text-center text-muted">
+            No matching sections.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Registered courses (student) -->
+<div class="card shadow-sm mb-5">
+  <div class="card-header bg-danger text-white">
+    <strong>Your Registered Sections</strong>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Course / Class</th>
+          <th class="nowrap">Section</th>
+          <th>Teacher</th>
+          <th class="nowrap">Days</th>
+          <th class="nowrap">Time</th>
+          <th class="nowrap">Type</th>
+          <th class="nowrap">Year / Sem</th>
+          <th class="nowrap">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in registered_courses %}
+        <tr>
+          <td><code>{{ r.course_info.course.code }}</code></td>
+          <td>
+            {{ r.course_info.course.name }}
+            <div class="text-muted small">{{ r.course_info.class_name }}</div>
+          </td>
+          <td class="nowrap">#{{ r.course_info.section|default:"—" }}</td>
+          <td>{{ r.course_info.teacher.get_full_name }}</td>
+          <td class="nowrap">{{ r.course_info.get_days_display }}</td>
+          <td class="nowrap">
+            {{ r.course_info.start_time|time:"H:i" }}&ndash;
+            <div>{{ r.course_info.end_time|time:"H:i" }}</div>
+          </td>
+          <td class="nowrap">{{ r.course_info.get_session_type_display }}</td>
+          <td class="nowrap">
+            {{ r.course_info.year }} / {{ r.course_info.get_semester_display }}
+          </td>
+          <td class="nowrap">
+            <form
+              method="post"
+              action="{% url 'drop_course' r.id %}"
+              class="d-inline"
+              onsubmit="return confirm('Drop this section?');"
+            >
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-secondary">
+                Drop
+              </button>
+            </form>
+          </td>
+        </tr>
+
+        {% empty %}
+        <tr>
+          <td colspan="9" class="text-center text-muted">
+            You have not registered for any sections yet.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}

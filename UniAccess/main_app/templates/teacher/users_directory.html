@@ -1,0 +1,111 @@
+{# templates/teacher/users_directory.html #}
+{% extends "base.html" %}
+{% load tz %}
+
+{% block styles %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-danger mb-0"> Students </h2>
+  </div>
+
+  <form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-auto">
+      <label class="form-label">Search</label>
+      <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="username / name / email / ID">
+    </div>
+    <div class="col-auto">
+      <label class="form-label">College</label>
+      <select name="college" class="form-select">
+        <option value="">All</option>
+        {% for val,label in college_opts %}
+          <option value="{{ val }}" {% if college == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <label class="form-label">Year</label>
+      <select name="year" class="form-select">
+        <option value="">All</option>
+        {% for y in year_opts %}
+          <option value="{{ y }}" {% if year|stringformat:"s" == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <label class="form-label">Sort</label>
+      <select name="order" class="form-select">
+        <option value="username" {% if order == "username" %}selected{% endif %}>Username ↑</option>
+        <option value="-username" {% if order == "-username" %}selected{% endif %}>Username ↓</option>
+        <option value="first_name" {% if order == "first_name" %}selected{% endif %}>First name ↑</option>
+        <option value="-first_name" {% if order == "-first_name" %}selected{% endif %}>First name ↓</option>
+        <option value="last_name" {% if order == "last_name" %}selected{% endif %}>Last name ↑</option>
+        <option value="-last_name" {% if order == "-last_name" %}selected{% endif %}>Last name ↓</option>
+        <option value="custom_id" {% if order == "custom_id" %}selected{% endif %}>ID ↑</option>
+        <option value="-custom_id" {% if order == "-custom_id" %}selected{% endif %}>ID ↓</option>
+        <option value="email" {% if order == "email" %}selected{% endif %}>Email ↑</option>
+        <option value="-email" {% if order == "-email" %}selected{% endif %}>Email ↓</option>
+        <option value="date_joined" {% if order == "date_joined" %}selected{% endif %}>Joined ↑</option>
+        <option value="-date_joined" {% if order == "-date_joined" %}selected{% endif %}>Joined ↓</option>
+      </select>
+    </div>
+    <div class="col-auto d-flex gap-2">
+      <button class="btn btn-outline-danger">Apply</button>
+      <a class="btn btn-outline-secondary" href="{% url 'teacher_userbase' %}">Clear</a>
+    </div>
+  </form>
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-danger text-white d-flex justify-content-between">
+      <strong>Students</strong>
+      <span class="text-white-50">Total: {{ students|length }}</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Student</th>
+            <th class="nowrap">Username / ID</th>
+            <th>Email</th>
+            <th>College</th>
+            <th>Phone</th>
+            <th class="nowrap">RFID</th>
+            <th class="nowrap">Joined</th>
+            <th class="nowrap">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in students %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ u.first_name }} {{ u.last_name }}</td>
+            <td class="nowrap"><code>{{ u.username }}</code> · {{ u.custom_id }}</td>
+            <td><a href="mailto:{{ u.email }}">{{ u.email }}</a></td>
+            <td>{{ u.get_college_display }}</td>
+            <td>{{ u.profile.phone|default:"—" }}</td>
+            <td class="nowrap">
+              {% if u.rfid_tag %}<code>{{ u.rfid_tag.tag_uid }}</code>{% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+            <td class="nowrap">{{ u.date_joined|date:"Y-m-d H:i" }}</td>
+            <td class="nowrap">
+              <a class="btn btn-sm btn-outline-secondary"
+                 href="{% url 'teacher_attendance_list' %}?q={{ u.username|urlencode }}">
+                 Attendance
+              </a>
+              <a class="btn btn-sm btn-outline-primary ms-1"
+                 href="mailto:{{ u.email }}">Email</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="9" class="text-center text-muted">No students found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,13 +1,16 @@
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
-from django.db.models import Q
-from ..models import Profile , Attendance, CourseInfo, Course
+from ..models import Profile , Attendance, CourseInfo, Course , Enrollment
 from django.shortcuts import render , redirect
 from ..forms import CustomUserCreationForm, AdminCreateStudentForm
 from django.contrib.auth import login
 from django.urls import reverse
 from datetime import datetime
+from django.core.cache import cache
+from .course_views import is_registration_open 
+from django.db.models import Q, Subquery, OuterRef, IntegerField, Value
+from django.db.models.functions import Coalesce
 
 User = get_user_model()
 
@@ -110,9 +113,12 @@ def attendance_list(request):
     end          = (request.GET.get("end") or "").strip()     # YYYY-MM-DD
     order        = (request.GET.get("order") or "-session_date").strip()
 
-    qs = (
-        Attendance.objects
-        .select_related("student", "course_info", "course_info__course", "course_info__teacher")
+    # Base queryset
+    qs = Attendance.objects.select_related(
+        "student",
+        "course_info",
+        "course_info__course",
+        "course_info__teacher",
     )
 
     # ---- Filters ----
@@ -141,7 +147,6 @@ def attendance_list(request):
     if device_id:
         qs = qs.filter(device_id__icontains=device_id)
 
-    # Dates are based on session_date (class day)
     def _parse_date(s):
         try:
             return datetime.strptime(s, "%Y-%m-%d").date()
@@ -155,6 +160,16 @@ def attendance_list(request):
     if end_d:
         qs = qs.filter(session_date__lte=end_d)
 
+    # ---- Annotate warning level from Enrollment (student, course_info) ----
+    subq = Enrollment.objects.filter(
+        student_id=OuterRef("student_id"),
+        course_info_id=OuterRef("course_info_id"),
+    ).values("attendance_warning_level")[:1]
+
+    qs = qs.annotate(
+        warn_level=Coalesce(Subquery(subq, output_field=IntegerField()), Value(0))
+    )
+
     # ---- Sorting (whitelist) ----
     allowed_order = {
         "session_date", "-session_date",
@@ -166,6 +181,7 @@ def attendance_list(request):
     }
     if order not in allowed_order:
         order = "-session_date"
+
     records = qs.order_by(order)[:1000]  # soft cap
 
     # ---- Options for filters ----
@@ -178,7 +194,10 @@ def attendance_list(request):
         CourseInfo.objects
         .select_related("course", "teacher")
         .order_by("course__code", "class_name")
-        .values("id", "class_name", "course__code", "course__name", "teacher__username", "teacher__first_name", "teacher__last_name")
+        .values(
+            "id", "class_name", "course__code", "course__name",
+            "teacher__username", "teacher__first_name", "teacher__last_name"
+        )
     )
 
     context = {
@@ -199,3 +218,25 @@ def attendance_list(request):
         "section_opts": section_opts,
     }
     return render(request, "admin/attendance_list.html", context)
+
+
+@staff_member_required
+def registration_control(request):
+    effective = is_registration_open()
+    override = cache.get("registration:is_open")  
+
+    if request.method == "POST":
+        val = request.POST.get("is_open")
+        if val == "clear":
+            cache.delete("registration:is_open")
+            messages.success(request, "Override cleared — using settings/date window now.")
+        else:
+            is_open = (val == "1")
+            cache.set("registration:is_open", is_open, timeout=None)
+            messages.success(request, f"Add/Drop is now forced to {'OPEN' if is_open else 'CLOSED'}.")
+        return redirect("registration_control")
+
+    return render(request, "admin/registration_control.html", {
+        "effective": effective,
+        "override": override,
+    })

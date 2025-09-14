@@ -143,6 +143,9 @@ class Enrollment(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    attendance_warning_level = models.PositiveSmallIntegerField(default=0) 
+    failed_due_to_attendance = models.BooleanField(default=False)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -151,13 +154,6 @@ class Enrollment(models.Model):
             ),
         ]
 
-    @property
-    def course(self):
-        return self.course_info.course
-
-    def __str__(self):
-        full_name = f"{self.student.first_name} {self.student.last_name}".strip() or self.student.username
-        return f"{full_name} – {self.course.code} ({self.course_info.class_name})"
 
 
 

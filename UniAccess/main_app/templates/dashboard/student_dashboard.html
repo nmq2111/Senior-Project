@@ -1,0 +1,356 @@
+{% extends 'base.html' %} {% load static tz %} {% block styles %}
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+/>
+
+{% endblock %} {% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-danger mb-0">My Dashboard</h2>
+    <div>
+      {% if tag_uid %}
+      <span class="pill open ms-2">RFID: <code>{{ tag_uid }}</code></span>
+      {% else %}
+      <span class="pill closed ms-2">No RFID tag</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+      <div class="kpi card card-body">
+        <div class="num" style="color: #d10e0e">{{ enrollments|length }}</div>
+        <div class="lbl">Registered sections</div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="kpi card card-body">
+        <div class="num" style="color: #d10e0e">
+          <strong>{{ present }}</strong> Present ·
+          <strong>{{ late }}</strong> Late ·
+          <strong>{{ absent }}</strong> Absent
+        </div>
+        <div class="lbl">Attendance (last 30 days)</div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="kpi card card-body">
+        <div class="num" style="color: #d10e0e">
+          <div>
+            {{ todays_classes|length }} class
+            <div>{{ todays_classes|length|pluralize }}</div>
+            {% if next_class %} · Next:
+            <code>{{ next_class.course.code }}</code> {{
+            next_class.start_time|time:"H:i" }}{% endif %}
+          </div>
+        </div>
+        <div class="lbl">Today</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="row g-3 mb-4">
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-danger text-white">
+          <h5>Attendance (30 days)</h5>
+        </div>
+        <div class="p-3"><canvas id="attPie" height="220"></canvas></div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-danger text-white">
+          <h5>Warning Levels by Section</h5>
+        </div>
+        <div class="p-3"><canvas id="warnBars" height="220"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today’s classes -->
+  <div class="card shadow-sm mb-4">
+    <div
+      class="card-header bg-danger text-white d-flex justify-content-between"
+    >
+      <h5>Today’s Classes</h5>
+      <span class="text-white-50">{{ today|date:"D, Y-m-d" }}</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Course / Class</th>
+            <th class="nowrap">Section</th>
+            <th>Teacher</th>
+            <th class="nowrap">Time</th>
+            <th class="nowrap">Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ci in todays_classes %}
+          <tr>
+            <td><code>{{ ci.course.code }}</code></td>
+            <td>
+              {{ ci.course.name }}
+              <div class="text-muted small">{{ ci.class_name }}</div>
+            </td>
+            <td class="nowrap">#{{ ci.section|default:"—" }}</td>
+            <td>{% firstof ci.teacher.get_full_name ci.teacher.username %}</td>
+            <td class="nowrap">
+              {{ ci.start_time|time:"H:i" }}–{{ ci.end_time|time:"H:i" }}
+            </td>
+            <td class="nowrap">{{ ci.get_session_type_display }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted">
+              No classes today.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Registered sections -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-danger text-white">
+      <h5>My Registered Sections</h5>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Course / Class</th>
+            <th class="nowrap">Section</th>
+            <th>Teacher</th>
+            <th class="nowrap">Days</th>
+            <th class="nowrap">Time</th>
+            <th class="nowrap">Year / Sem</th>
+            <th class="nowrap">Warn</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in enrollments %}
+          <tr>
+            <td><code>{{ e.course_info.course.code }}</code></td>
+            <td>
+              {{ e.course_info.course.name }}
+              <div class="text-muted small">{{ e.course_info.class_name }}</div>
+            </td>
+            <td class="nowrap">#{{ e.course_info.section|default:"—" }}</td>
+            <td>{% firstof e.course_info.teacher.get_full_name %}</td>
+            <td class="nowrap">{{ e.course_info.get_days_display }}</td>
+            <td class="nowrap">
+              {{ e.course_info.start_time|time:"H:i" }}–
+              <div>{{ e.course_info.end_time|time:"H:i" }}</div>
+            </td>
+            <td class="nowrap">
+              {{ e.course_info.year }} /
+              <div>{{ e.course_info.get_semester_display }}</div>
+            </td>
+            <td class="nowrap">
+              {% if e.attendance_warning_level|default_if_none:0|add:0 == 0 %}
+              <span class="badge text-bg-success">0</span>
+              {% elif e.attendance_warning_level|default_if_none:0|add:0 == 1 %}
+              <span class="badge text-bg-warning text-dark">1</span>
+              {% elif e.attendance_warning_level|default_if_none:0|add:0 == 2 %}
+              <span class="badge text-bg-warning">2</span>
+              {% else %}
+              <span class="badge text-bg-danger">3</span>
+              {% endif %} {% if e.failed_due_to_attendance %}
+              <span class="badge text-bg-danger ms-1">FAILED</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="text-center text-muted">
+              You are not registered in any sections.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Attendance & Scans -->
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-danger text-white">
+          <h5>Recent Attendance</h5>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Code</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in recent_attendance %}
+              <tr>
+                <td class="nowrap">{{ a.session_date|date:"Y-m-d" }}</td>
+                <td><code>{{ a.course_info.course.code }}</code></td>
+                <td>
+                  {% if a.status == "PRESENT" %}
+                  <span class="badge text-bg-success">Present</span>
+                  {% elif a.status == "LATE" %}
+                  <span class="badge text-bg-warning text-dark">Late</span>
+                  {% else %}
+                  <span class="badge text-bg-secondary">Absent</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="3" class="text-center text-muted">
+                  No attendance yet.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-danger text-white">
+          <h5>Recent Scans</h5>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover mb-0">
+            <thead>
+              <tr>
+                <th>When</th>
+                <th>UID</th>
+                <th class="text-muted">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in recent_scans %}
+              <tr>
+                <td class="nowrap">{{ s.created_at|date:"Y-m-d H:i" }}</td>
+                <td><code>{{ s.uid }}</code></td>
+                <td class="text-muted small">{{ s.extra.note|default:"" }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="3" class="text-center text-muted">
+                  No scans yet.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Week -->
+  <div class="card shadow-sm mt-4">
+    <div class="card-header bg-danger text-white"><h5>My Week</h5></div>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover mb-0 align-middle">
+        <thead>
+          <tr>
+            <th class="nowrap">Time</th>
+            {% for key, label in day_order_full %}
+            <th class="nowrap">{{ label }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% if week_table_rows %} {% for row in week_table_rows %}
+          <tr>
+            <td class="nowrap"><strong>{{ row.slot|time:"H:i" }}</strong></td>
+            {% for cell in row.cells %}
+            <td style="vertical-align: top">
+              {% for ci in cell %}
+              <div class="mb-2">
+                <code>{{ ci.course.code }}</code>
+                {{ ci.start_time|time:"H:i" }}–{{ ci.end_time|time:"H:i" }}
+                <div class="text-muted small">
+                  {{ ci.course.name }} · #{{ ci.section|default:"—" }}
+                </div>
+              </div>
+              {% endfor %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %} {% else %}
+          <tr>
+            <td
+              colspan="{{ day_order_full|length|add:1 }}"
+              class="text-center text-muted"
+            >
+              No schedule found.
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {# Inject chart data safely for JS #} {{ att_pie|json_script:"att-pie-data" }}
+  {{ warn_bars|json_script:"warn-bar-data" }}
+</div>
+
+{# Chart.js #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  ;(function () {
+    const pieSrc = JSON.parse(
+      document.getElementById('att-pie-data').textContent
+    )
+    const warnSrc = JSON.parse(
+      document.getElementById('warn-bar-data').textContent
+    )
+
+    const pieCtx = document.getElementById('attPie').getContext('2d')
+    new Chart(pieCtx, {
+      type: 'pie',
+      data: {
+        labels: pieSrc.labels,
+        datasets: [{ data: pieSrc.data }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    })
+
+    const barCtx = document.getElementById('warnBars').getContext('2d')
+    new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: warnSrc.labels,
+        datasets: [{ data: warnSrc.data }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, precision: 0, ticks: { stepSize: 1 } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    })
+  })()
+</script>
+{% endblock %}
