@@ -7,4 +7,5 @@ urlpatterns = [
     path("api/rfid/assign/", views.tag_to_student, name="tag_to_student"),
     path("api/rfid/courseinfo/", views.find_current_courseinfo_for_student , name="find_current_courseinfo_for_student"),
     path("api/rfid/latest-unassigned/", views.latest_unassigned_uids_api, name="latest_unassigned_uids"),  
+    path("api/attendance/checkout", views.student_checkout_api, name="student_checkout_api"),
 ]

@@ -6,9 +6,12 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from main_app.views.attendance_views import find_current_courseinfo_for_student, _weekday_tokens , maybe_update_warning_and_notify
+from main_app.views.attendance_views import (
+    find_current_courseinfo_for_student,
+    _weekday_tokens,
+    maybe_update_warning_and_notify,
+)
 from ..models import RFIDTag, RfidScan
-
 
 try:
     from ..models import Attendance, CourseInfo, Enrollment
@@ -16,31 +19,22 @@ try:
 except Exception:
     HAVE_ATT = False
 
-
-
 User = get_user_model()
-
 
 COOLDOWN_SEC = 3
 LATE_THRESHOLD_MIN = 10
 
-
+# === Helpers ===
 def is_student_enrolled(student, course_info) -> bool:
     if not (student and course_info):
         return False
     return Enrollment.objects.filter(student=student, course_info=course_info).exists()
 
 
-
 @csrf_exempt
 @require_http_methods(["POST"])
 @transaction.atomic
 def tag_to_student(request):
-    """
-    JSON:
-      {"uid":"04A1B2C3D4","username":"student1","force":false}
-      or {"uid":"04A1B2C3D4","user_id":123}
-    """
     try:
         data = json.loads(request.body.decode("utf-8"))
     except Exception:
@@ -57,11 +51,12 @@ def tag_to_student(request):
         return JsonResponse({"ok": False, "error": "Provide username or user_id"}, status=400)
 
     try:
-        target_user = User.objects.get(id=user_id) if user_id is not None else User.objects.get(username=username)
+        target_user = (
+            User.objects.get(id=user_id) if user_id is not None else User.objects.get(username=username)
+        )
     except User.DoesNotExist:
         return JsonResponse({"ok": False, "error": "User not found"}, status=404)
 
-    # If user already has a different tag
     existing_for_user = getattr(target_user, "rfid_tag", None)
     if existing_for_user and existing_for_user.tag_uid != uid and not force:
         return JsonResponse(
@@ -69,7 +64,6 @@ def tag_to_student(request):
             status=409,
         )
 
-    # If UID already assigned to another user
     try:
         tag = RFIDTag.objects.select_related("assigned_to").get(tag_uid=uid)
         if tag.assigned_to and tag.assigned_to != target_user and not force:
@@ -92,21 +86,10 @@ def tag_to_student(request):
     )
 
 
-
 @csrf_exempt
 @require_http_methods(["POST"])
 @transaction.atomic
 def rfid_scan(request):
-    """
-    Body: {"uid":"ABCD1234","device_id":"ESP32-LAB","status":"SCAN"|"IN"|"OUT"}
-
-    Behavior:
-      - Always logs a row in RfidScan (uid, device_id, extra).
-      - If UID assigned:
-          * If class active → create/update Attendance (PRESENT/LATE) **ONLY IF ENROLLED**.
-          * Else → 200 with note "No active class now".
-      - If UID unknown → 404 (but still logged in RfidScan).
-    """
     try:
         data = json.loads(request.body.decode("utf-8"))
     except Exception:
@@ -124,7 +107,6 @@ def rfid_scan(request):
     ts = timezone.now()
     source_ip = request.META.get("REMOTE_ADDR")
 
-    # Map UID → user (if assigned)
     user = None
     try:
         tag = RFIDTag.objects.select_related("assigned_to").get(tag_uid=uid)
@@ -134,12 +116,11 @@ def rfid_scan(request):
 
     known = bool(user)
 
-    # Always log the raw scan
     try:
         RfidScan.objects.create(
             uid=uid,
-            user=user if known else None,   # optional, your model allows null
-            tag=tag if tag else None,       # optional, your model allows null
+            user=user if known else None,
+            tag=tag if tag else None,
             device_id=device_id or None,
             extra={
                 "ts": ts.isoformat(),
@@ -152,7 +133,6 @@ def rfid_scan(request):
     except Exception as e:
         return JsonResponse({"ok": False, "error": f"RfidScan write failed: {str(e)}"}, status=500)
 
-    # Unknown → stop here (still logged)
     if not known:
         return JsonResponse(
             {
@@ -169,7 +149,6 @@ def rfid_scan(request):
             status=404,
         )
 
-    # If Attendance module absent, return success with info
     if not HAVE_ATT:
         display_name = (user.get_full_name() or user.username).strip()
         return JsonResponse(
@@ -186,7 +165,6 @@ def rfid_scan(request):
             status=200,
         )
 
-    # Find an active class window
     ci = find_current_courseinfo_for_student(user, ts=ts)
     display_name = (user.get_full_name() or user.username).strip()
 
@@ -194,7 +172,7 @@ def rfid_scan(request):
         tokens = _weekday_tokens(ts)
         match_count = CourseInfo.objects.filter(
             status__in=["Yes", "Available"],
-            days__icontains=tokens[2],  # "MONDAY" etc.
+            days__icontains=tokens[2],
             start_time__lte=timezone.localtime(ts).time(),
             end_time__gte=timezone.localtime(ts).time(),
         ).count()
@@ -218,7 +196,6 @@ def rfid_scan(request):
             status=200,
         )
 
-    # ✅ Enrollment gate — DO NOT write Attendance if not enrolled
     if not is_student_enrolled(user, ci):
         return JsonResponse(
             {
@@ -239,7 +216,6 @@ def rfid_scan(request):
             status=200,
         )
 
-    # Upsert Attendance for (student, course_info, session_date)
     session_date = timezone.localdate(ts)
     try:
         att, created = Attendance.objects.get_or_create(
@@ -249,13 +225,11 @@ def rfid_scan(request):
             defaults={"first_seen": ts, "last_seen": ts, "status": "PRESENT"},
         )
 
-        # cooldown for last_seen
         if not created:
             recent_cutoff = (att.last_seen or att.first_seen or ts - timedelta(hours=1)) + timedelta(seconds=COOLDOWN_SEC)
             if ts >= recent_cutoff:
                 att.last_seen = ts
 
-        # Late rule on first record
         if created and getattr(ci, "start_time", None):
             start_dt = timezone.make_aware(datetime.combine(session_date, ci.start_time))
             if ts > start_dt + timedelta(minutes=LATE_THRESHOLD_MIN):
@@ -263,7 +237,6 @@ def rfid_scan(request):
 
         att.device_id = device_id or att.device_id
         att.save()
-
 
         calc, notified = maybe_update_warning_and_notify(user, ci)
 
@@ -287,40 +260,42 @@ def rfid_scan(request):
             status=200,
         )
 
-    
     return JsonResponse(
-    {
-        "ok": True,
-        "known_tag": True,
-        "uid": uid,
-        "user": user.username,
-        "display_name": display_name,
-        "course_info": str(ci),
-        "session_date": str(session_date),
-        "attendance_id": att.id,
-        "created": created,
-        "status": att.status,
-        "note": ("Marked present" if created and att.status == "PRESENT"
-                 else ("Marked late" if created and att.status == "LATE" else "Updated")),
-        "lcd_line1": f"Welcome {display_name}",
-        "lcd_line2": f"{att.status.title()}",
-        "policy": {
-            "present": calc.present,
-            "late": calc.late,
-            "absent": calc.absent,
-            "late_as_absence": calc.late_as_absence,
-            "absence_equiv": calc.absence_equiv,
-            "planned": calc.planned,
-            "pct_absence": round(calc.pct_absence * 100, 1),
-            "level": calc.level,
-            "notified": notified,
+        {
+            "ok": True,
+            "known_tag": True,
+            "uid": uid,
+            "user": user.username,
+            "display_name": display_name,
+            "course_info": str(ci),
+            "session_date": str(session_date),
+            "attendance_id": att.id,
+            "created": created,
+            "status": att.status,
+            "note": (
+                "Marked present"
+                if created and att.status == "PRESENT"
+                else ("Marked late" if created and att.status == "LATE" else "Updated")
+            ),
+            "lcd_line1": f"Welcome {display_name}",
+            "lcd_line2": f"{att.status.title()}",
+            "policy": {
+                "present": calc.present,
+                "late": calc.late,
+                "absent": calc.absent,
+                "late_as_absence": calc.late_as_absence,
+                "absence_equiv": calc.absence_equiv,
+                "planned": calc.planned,
+                "pct_absence": round(calc.pct_absence * 100, 1),
+                "level": calc.level,
+                "notified": notified,
+            },
+            "debug": {
+                "now_local": timezone.localtime(ts).strftime("%Y-%m-%d %H:%M:%S"),
+                "course_info_id": getattr(ci, "id", None),
+                "start_time": str(getattr(ci, "start_time", "")),
+                "end_time": str(getattr(ci, "end_time", "")),
+            },
         },
-        "debug": {
-            "now_local": timezone.localtime(ts).strftime("%Y-%m-%d %H:%M:%S"),
-            "course_info_id": getattr(ci, "id", None),
-            "start_time": str(getattr(ci, "start_time", "")),
-            "end_time": str(getattr(ci, "end_time", "")),
-        },
-    },
-    status=200,
-)
+        status=200,
+    )

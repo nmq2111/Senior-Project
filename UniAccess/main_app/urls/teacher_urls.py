@@ -7,7 +7,7 @@ urlpatterns = [
     path("teacher/attendance/edit/<int:pk>/", views.TeacherAttendanceEdit.as_view(), name="teacher_attendance_edit"),
     path("teacher/attendance/take/course/", views.attendance_take_C, name="attendance_take_C"),
     path("teacher/users/", views.teacher_userbase, name="teacher_userbase"),
-    
-    
+    path("teacher/sections/<int:course_info_id>/finish/", views.finish_lecture, name="finish_lecture"),
+
 ]
 

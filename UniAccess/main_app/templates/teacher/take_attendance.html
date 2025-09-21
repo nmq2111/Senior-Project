@@ -69,6 +69,22 @@
       >
         All Absent
       </button>
+
+      <form
+        method="post"
+        action="{% url 'finish_lecture' ci.id %}"
+        class="inline"
+      >
+        {% csrf_token %}
+        <input
+          type="hidden"
+          name="date"
+          value="{{ session_date|date:'Y-m-d' }}"
+        />
+        <button type="submit" class="btn btn-sm btn-danger">
+          Finish lecture (early checkout)
+        </button>
+      </form>
     </div>
 
     <div class="card shadow-sm">
