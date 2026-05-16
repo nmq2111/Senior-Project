@@ -59,6 +59,7 @@
             <th>College</th>
             <th>RFID Tag</th>
             <th>Email</th>
+            <th class="text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -80,6 +81,12 @@
                 {% endif %}
               </td>
               <td>{{ u.email }}</td>
+              <td class="text-end">  
+                 <a class="btn btn-sm btn-outline-danger" href="{% url 'admin_user_edit' u.id %}">Edit</a>
+                 <form method="post" action="{% url 'admin_user_delete' u.id %}" class="d-inline" onsubmit="return confirm('Delete this user? This cannot be undone.');"> {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+              </td>
             </tr>
           {% empty %}
             <tr>
@@ -106,6 +113,7 @@
             <th>Role</th>
             <th>College</th>
             <th>Email</th>
+            <th class="text-end">Actions</th> 
           </tr>
         </thead>
         <tbody>
@@ -120,6 +128,19 @@
                 {% endfor %}
               </td>
               <td>{{ u.email }}</td>
+              <td class="text-end"> 
+        <a class="btn btn-sm btn-outline-danger"
+           href="{% url 'admin_user_edit' u.id %}">
+          Edit
+        </a>
+        <form method="post"
+              action="{% url 'admin_user_delete' u.id %}"
+              class="d-inline"
+              onsubmit="return confirm('Delete this user?');">
+          {% csrf_token %}
+          <button class="btn btn-sm btn-outline-danger">Delete</button>
+        </form>
+      </td>
             </tr>
           {% empty %}
             <tr>

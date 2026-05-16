@@ -1,0 +1,14 @@
+{% extends "base.html" %} {% block content %}
+<div class="container py-4">
+  <h2 class="text-danger">Delete User</h2>
+  <p>Are you sure you want to delete user <b>{{ user_obj.username }}</b>?</p>
+
+  <form method="post" class="d-inline">
+    {% csrf_token %}
+    <button class="btn btn-danger">Yes, delete</button>
+  </form>
+  <a href="{% url 'users_directory' %}" class="btn btn-outline-secondary"
+    >Cancel</a
+  >
+</div>
+{% endblock %}

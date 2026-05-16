@@ -1,5 +1,5 @@
 <!-- {% load static %} -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -9,7 +9,7 @@
       type="image/png"
       href="{% static 'images/Logo - icon.png' %}"
     />
-    <title>{% block title %}UniAccess{% endblock %}</title>
+    <title>{% block title %}Unique Access{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
     <link rel="stylesheet" href="{% static 'css/courses.css' %}" />
 
@@ -29,7 +29,7 @@
   <body>
     <div class="sidebar">
       <div>
-        <h2>UniAccess</h2>
+        <h2>Unique Access</h2>
         <nav>
           {% if user.is_authenticated %}
           <a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a>
@@ -120,13 +120,6 @@
       {% endif %}
     </div>
 
-    <div class="main-content">
-      {% block content %} {% endblock %}
-      <!-- <footer>
-        <div class="footer">
-          <div class="row">© 2025 UniAccess - All rights reserved.</div>
-        </div>
-      </footer> -->
-    </div>
+    <div class="main-content">{% block content %} {% endblock %}</div>
   </body>
 </html>

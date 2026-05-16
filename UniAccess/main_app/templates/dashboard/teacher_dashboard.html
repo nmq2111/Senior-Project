@@ -3,57 +3,37 @@
   href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
   rel="stylesheet"
 />
-<style>
-  .nowrap {
-    white-space: nowrap;
-  }
-  code {
-    background: #f6f8fa;
-    padding: 0.1rem 0.35rem;
-    border-radius: 4px;
-  }
-  .stat {
-    padding: 12px 16px;
-    border: 1px solid #dee2e6;
-    border-radius: 12px;
-  }
-  .stat small {
-    color: #6c757d;
-  }
-  .table td,
-  .table th {
-    vertical-align: middle;
-  }
-</style>
 {% endblock %} {% block content %}
 <div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="text-danger mb-0">Teacher Dashboard</h2>
-    <div class="text-muted">As of {{ today|date:"Y-m-d" }}</div>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-danger mb-0 fw-bold">Teacher Dashboard</h2>
+    <div class="text-muted small fw-medium">As of {{ today|date:"Y-m-d" }}</div>
   </div>
 
-  {# Top: Take Attendance (today) #}
+  <!-- Dynamic Attendance Actions Panels -->
   <div class="card shadow-sm mb-4">
     <div
       class="card-header bg-danger text-white d-flex justify-content-between align-items-center"
     >
-      <strong>Take Attendance (Today)</strong>
-      <a href="{% url 'teacher_attendance_list' %}" class="btn btn-light btn-sm"
-        >View All Attendance</a
+      <strong class="fw-semibold">Take Attendance (Today)</strong>
+      <a
+        href="{% url 'teacher_attendance_list' %}"
+        class="btn btn-light btn-sm font-weight-medium"
+        >View History Logs</a
       >
     </div>
-    <div class="card-body">
+    <div class="card-body p-0">
       {% if todays_sections %}
       <div class="table-responsive">
-        <table class="table table-sm table-hover align-middle mb-0">
-          <thead>
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
             <tr>
               <th>Code</th>
               <th>Course / Class</th>
               <th class="nowrap">Section</th>
-              <th class="nowrap">Time</th>
-              <th class="nowrap">Type</th>
-              <th class="text-center nowrap">Action</th>
+              <th class="nowrap">Time Slot</th>
+              <th class="nowrap">Session Classification</th>
+              <th class="text-center nowrap">Execution Action</th>
             </tr>
           </thead>
           <tbody>
@@ -61,22 +41,28 @@
             <tr>
               <td class="nowrap"><code>{{ ci.course.code }}</code></td>
               <td>
-                {{ ci.course.name }}
+                <div class="fw-medium text-dark">{{ ci.course.name }}</div>
                 <div class="text-muted small">{{ ci.class_name }}</div>
               </td>
-              <td class="nowrap">#{{ ci.section|default:"—" }}</td>
-              <td class="nowrap">
+              <td class="nowrap font-monospace fw-bold">
+                #{{ ci.section|default:"—" }}
+              </td>
+              <td class="nowrap text-dark fw-medium">
                 {{ ci.start_time|time:"H:i" }}–{{ ci.end_time|time:"H:i" }}
               </td>
-              <td class="nowrap">{{ ci.get_session_type_display }}</td>
+              <td class="nowrap">
+                <span class="badge bg-light text-secondary border"
+                  >{{ ci.get_session_type_display }}</span
+                >
+              </td>
               <td class="text-center">
                 <a
-                  class="btn btn-danger btn-sm"
+                  class="btn btn-danger btn-sm px-3"
                   href="{% url 'teacher_take_attendance' ci.id %}?date={{ today|date:'Y-m-d' }}"
                   >Take Attendance</a
                 >
                 <a
-                  class="btn btn-outline-secondary btn-sm ms-1"
+                  class="btn btn-outline-secondary btn-sm ms-1 px-3"
                   href="{% url 'teacher_userbase' %}"
                   >Students</a
                 >
@@ -87,78 +73,81 @@
         </table>
       </div>
       {% if next_class %}
-      <div class="text-muted small mt-2">
-        Next:
-        <code>{{ next_class.course.code }}</code>
-        {{next_class.start_time|time:"H:i" }}
+      <div class="text-muted small p-3 bg-light border-top">
+        <strong>Up Next Schedule Block:</strong>
+        <code>{{ next_class.course.code }}</code> starting at {{
+        next_class.start_time|time:"H:i" }}
       </div>
       {% endif %} {% else %}
-      <div class="text-muted">No sections scheduled today.</div>
+      <div class="text-muted text-center py-4">
+        No classroom items mapped out for execution workflow configuration
+        indexes today.
+      </div>
       {% endif %}
     </div>
   </div>
 
-  {# Stats #}
+  <!-- Instructor Micro Stats Aggregates -->
   <div class="row g-3 mb-4">
     <div class="col-sm-4">
-      <div class="stat">
-        <small>Sections</small>
-        <h4>{{ total_sections }}</h4>
+      <div class="kpi-card">
+        <div class="num">{{ total_sections }}</div>
+        <div class="lbl">Assigned Sections</div>
       </div>
     </div>
     <div class="col-sm-4">
-      <div class="stat">
-        <small>Total Students</small>
-        <h4>{{ total_students }}</h4>
+      <div class="kpi-card">
+        <div class="num">{{ total_students }}</div>
+        <div class="lbl">Total Managed Students</div>
       </div>
     </div>
     <div class="col-sm-4">
-      <div class="stat">
-        <small>Attendance Today</small>
-        <div>
-          <strong>{{ today_present }}</strong> Present ·
-          <strong>{{ today_late }}</strong> Late ·
-          <strong>{{ today_absent }}</strong> Absent
+      <div class="kpi-card">
+        <div class="num fs-4 py-1">
+          <span class="text-success">{{ today_present }}</span> ·
+          <span class="text-warning">{{ today_late }}</span> ·
+          <span class="text-danger">{{ today_absent }}</span>
         </div>
+        <div class="lbl">Attendance Performance Run (Today)</div>
       </div>
     </div>
   </div>
 
-  {# Charts #}
+  <!-- Analytics Summary Charts Panels -->
   <div class="row g-3 mb-4">
     <div class="col-lg-6">
       <div class="card shadow-sm h-100">
         <div class="card-header bg-danger text-white">
-          <strong>Last 30 Days — Attendance</strong>
+          <h6 class="mb-0 py-1 fw-semibold">
+            Last 30 Days — Rolling Attendance Metric
+          </h6>
         </div>
-        <div class="p-3">
+        <div class="card-body p-3">
           <canvas id="attPie" height="200"></canvas>
-          {{ att_pie|json_script:"att-pie-data" }}
         </div>
       </div>
     </div>
     <div class="col-lg-6">
       <div class="card shadow-sm h-100">
         <div class="card-header bg-danger text-white">
-          <strong>Warning Levels</strong>
+          <h6 class="mb-0 py-1 fw-semibold">Risk Warning Levels Spread</h6>
         </div>
-        <div class="p-3">
+        <div class="card-body p-3">
           <canvas id="warnBars" height="200"></canvas>
-          {{ warn_bars|json_script:"warn-bars-data" }}
         </div>
       </div>
     </div>
   </div>
 
-  {# Recent attendance #}
+  <!-- Live Activity Audit Data Panels -->
   <div class="row g-3">
     <div class="col-lg-7">
       <div class="card shadow-sm h-100">
         <div class="card-header bg-danger text-white">
-          <strong>Recent Attendance</strong>
+          <h6 class="mb-0 py-1 fw-semibold">Recent Roster Attendance Logs</h6>
         </div>
         <div class="table-responsive">
-          <table class="table table-striped table-hover mb-0">
+          <table class="table table-striped table-hover mb-0 align-middle">
             <thead>
               <tr>
                 <th>Date</th>
@@ -170,9 +159,13 @@
             <tbody>
               {% for a in recent_attendance %}
               <tr>
-                <td class="nowrap">{{ a.session_date|date:"Y-m-d" }}</td>
+                <td class="nowrap text-muted small">
+                  {{ a.session_date|date:"Y-m-d" }}
+                </td>
                 <td>
-                  {{ a.student.first_name }} {{ a.student.last_name }}
+                  <div class="fw-medium text-dark">
+                    {{ a.student.first_name }} {{ a.student.last_name }}
+                  </div>
                   <div class="text-muted small">
                     <code>{{ a.student.username }}</code>
                   </div>
@@ -181,22 +174,19 @@
                   <code>{{ a.course_info.course.code }}</code>
                 </td>
                 <td class="nowrap">
-                  {% if a.status == 'PRESENT' %}<span
-                    class="badge text-bg-success"
-                    >Present</span
-                  >
-                  {% elif a.status == 'LATE' %}<span
-                    class="badge text-bg-warning text-dark"
-                    >Late</span
-                  >
-                  {% else %}<span class="badge text-bg-secondary">Absent</span
-                  >{% endif %}
+                  {% if a.status == 'PRESENT' %}
+                  <span class="badge bg-success">Present</span>
+                  {% elif a.status == 'LATE' %}
+                  <span class="badge bg-warning text-dark">Late</span>
+                  {% else %}
+                  <span class="badge bg-secondary">Absent</span>
+                  {% endif %}
                 </td>
               </tr>
               {% empty %}
               <tr>
-                <td colspan="4" class="text-center text-muted">
-                  No attendance yet.
+                <td colspan="4" class="text-center text-muted py-4">
+                  No recent attendance modifications captured.
                 </td>
               </tr>
               {% endfor %}
@@ -209,30 +199,35 @@
     <div class="col-lg-5">
       <div class="card shadow-sm h-100">
         <div class="card-header bg-danger text-white">
-          <strong>Recent Scans</strong>
+          <h6 class="mb-0 py-1 fw-semibold">Recent Scans Activity Feed</h6>
         </div>
         <div class="table-responsive">
-          <table class="table table-striped table-hover mb-0">
+          <table class="table table-striped mb-0 align-middle">
             <thead>
               <tr>
-                <th>When</th>
-                <th>UID</th>
-                <th class="text-muted">Note</th>
+                <th>Time</th>
+                <th>UID Target</th>
+                <th class="text-muted">System Note</th>
               </tr>
             </thead>
             <tbody>
               {% for s in recent_scans %}
               <tr>
-                <td class="nowrap">
+                <td class="nowrap small text-muted">
                   {{ s.created_at|localtime|date:"Y-m-d H:i" }}
                 </td>
                 <td><code>{{ s.uid }}</code></td>
-                <td class="text-muted small">{{ s.extra.note|default:"" }}</td>
+                <td
+                  class="text-muted small text-truncate"
+                  style="max-width: 150px"
+                >
+                  {{ s.extra.note|default:"—" }}
+                </td>
               </tr>
               {% empty %}
               <tr>
-                <td colspan="3" class="text-center text-muted">
-                  No scans yet.
+                <td colspan="3" class="text-center text-muted py-4">
+                  No scanner stream interactions detected.
                 </td>
               </tr>
               {% endfor %}
@@ -243,52 +238,75 @@
     </div>
   </div>
 
-  {# My Week (by day buckets) #}
+  <!-- Weekly Structural Content Allocation Rows -->
   <div class="card shadow-sm mt-4">
-    <div class="card-header bg-danger text-white"><strong>My Week</strong></div>
+    <div class="card-header bg-danger text-white">
+      <h6 class="mb-0 py-1 fw-semibold">My Schedule Clusters</h6>
+    </div>
     <div class="table-responsive">
-      <table class="table table-striped table-hover mb-0">
-        <thead>
+      <table class="table table-bordered mb-0">
+        <thead class="table-light">
           <tr>
-            <th>UTH</th>
-            <th>MW</th>
-            <th>FS</th>
+            <th>Sunday / Tuesday / Thursday (UTH)</th>
+            <th>Monday / Wednesday (MW)</th>
+            <th>Friday / Saturday (FS)</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>
+            <td class="p-3" style="width: 33.33%; vertical-align: top">
               {% for ci in week_groups.uth %}
-              <div class="mb-2">
-                <code>{{ ci.course.code }}</code
-                >{{ci.start_time|time:"H:i"}}–{{ci.end_time|time:"H:i"}}
-                <div class="text-muted small">
+              <div
+                class="p-2 mb-2 bg-light border-start border-danger border-3 rounded"
+              >
+                <code>{{ ci.course.code }}</code>
+                <span class="small fw-semibold ms-1"
+                  >{{ ci.start_time|time:"H:i" }}–{{ ci.end_time|time:"H:i"
+                  }}</span
+                >
+                <div class="text-muted style-custom-subtext small mt-1">
                   {{ ci.course.name }} · #{{ ci.section|default:"—" }}
                 </div>
               </div>
-              {% empty %}<span class="text-muted">—</span>{% endfor %}
+              {% empty %}
+              <span class="text-muted small">No scheduled block paths.</span>
+              {% endfor %}
             </td>
-            <td>
+            <td class="p-3" style="width: 33.33%; vertical-align: top">
               {% for ci in week_groups.mw %}
-              <div class="mb-2">
-                <code>{{ci.course.code }}</code>
-                {{ci.start_time|time:"H:i"}}–{{ci.end_time|time:"H:i" }}
-                <div class="text-muted small">
-                  {{ci.course.name }} · #{{ci.section|default:"—" }}
+              <div
+                class="p-2 mb-2 bg-light border-start border-danger border-3 rounded"
+              >
+                <code>{{ ci.course.code }}</code>
+                <span class="small fw-semibold ms-1"
+                  >{{ ci.start_time|time:"H:i" }}–{{ ci.end_time|time:"H:i"
+                  }}</span
+                >
+                <div class="text-muted style-custom-subtext small mt-1">
+                  {{ ci.course.name }} · #{{ ci.section|default:"—" }}
                 </div>
               </div>
-              {% empty %}<span class="text-muted">—</span>{% endfor %}
+              {% empty %}
+              <span class="text-muted small">No scheduled block paths.</span>
+              {% endfor %}
             </td>
-            <td>
+            <td class="p-3" style="width: 33.33%; vertical-align: top">
               {% for ci in week_groups.fs %}
-              <div class="mb-2">
-                <code>{{ci.course.code }}</code>
-                {{ci.start_time|time:"H:i"}}–{{ci.end_time|time:"H:i" }}
-                <div class="text-muted small">
-                  {{ci.course.name }} · #{{ci.section|default:"—" }}
+              <div
+                class="p-2 mb-2 bg-light border-start border-danger border-3 rounded"
+              >
+                <code>{{ ci.course.code }}</code>
+                <span class="small fw-semibold ms-1"
+                  >{{ ci.start_time|time:"H:i" }}–{{ ci.end_time|time:"H:i"
+                  }}</span
+                >
+                <div class="text-muted style-custom-subtext small mt-1">
+                  {{ ci.course.name }} · #{{ ci.section|default:"—" }}
                 </div>
               </div>
-              {% empty %}<span class="text-muted">—</span>{% endfor %}
+              {% empty %}
+              <span class="text-muted small">No scheduled block paths.</span>
+              {% endfor %}
             </td>
           </tr>
         </tbody>
@@ -297,7 +315,8 @@
   </div>
 </div>
 
-{# Chart.js #}
+{{att_pie|json_script:"att-pie-data"}}{{warn_bars|json_script:"warn-bars-data"}}
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
   ;(function () {
@@ -308,19 +327,25 @@
       document.getElementById('warn-bars-data').textContent
     )
 
-    const pieCtx = document.getElementById('attPie').getContext('2d')
-    new Chart(pieCtx, {
+    new Chart(document.getElementById('attPie').getContext('2d'), {
       type: 'pie',
       data: { labels: pieData.labels, datasets: [{ data: pieData.data }] },
-      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-    })
-
-    const barCtx = document.getElementById('warnBars').getContext('2d')
-    new Chart(barCtx, {
-      type: 'bar',
-      data: { labels: barData.labels, datasets: [{ data: barData.data }] },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    })
+
+    new Chart(document.getElementById('warnBars').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: barData.labels,
+        datasets: [{ data: barData.data, backgroundColor: '#e30613' }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
       }

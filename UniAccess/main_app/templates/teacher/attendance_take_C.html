@@ -6,17 +6,12 @@
 {% endblock %} {% block content %}
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="text-danger mb-0">My Attendance</h2>
+    <h2 class="text-danger mb-0">My Courses</h2>
     <div>
       <a
         href="{% url 'teacher_attendance_list' %}"
         class="btn btn-outline-secondary btn-sm"
         >Refresh</a
-      >
-      <a
-        href="{% url 'attendance_take_C' %}"
-        class="btn btn-outline-danger btn-sm"
-        >Take</a
       >
     </div>
   </div>

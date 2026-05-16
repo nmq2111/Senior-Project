@@ -2,14 +2,15 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 from ..models import Profile, Attendance, CourseInfo, Course, Enrollment
-from django.shortcuts import render, redirect
-from ..forms import CustomUserCreationForm, AdminCreateStudentForm
+from django.shortcuts import render, redirect, get_object_or_404
+from ..forms import CustomUserCreationForm, AdminCreateStudentForm , AdminUserEditForm
 from django.urls import reverse
 from datetime import datetime
 from django.core.cache import cache
 from .course_views import is_registration_open
 from django.db.models import Q, Subquery, OuterRef, IntegerField, Value
 from django.db.models.functions import Coalesce
+from django.views.decorators.http import require_http_methods
 
 User = get_user_model()
 
@@ -76,6 +77,35 @@ def users_directory(request):
         "tag": tags,
     }
     return render(request, "admin/users_directory.html", context)
+
+
+
+@staff_member_required
+@require_http_methods(["GET", "POST"])
+def admin_user_edit(request, user_id):
+    u = get_object_or_404(User, pk=user_id)
+    if request.method == "POST":
+        form = AdminUserEditForm(request.POST, instance=u)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"User '{u.username}' updated.")
+            return redirect("users_directory")
+    else:
+        form = AdminUserEditForm(instance=u)
+    return render(request, "admin/user_edit.html", {"form": form, "user_obj": u})
+
+
+@staff_member_required
+@require_http_methods(["GET", "POST"])
+def admin_user_delete(request, user_id):
+    u = get_object_or_404(User, pk=user_id)
+    if request.method == "POST":
+        username = u.username
+        u.delete()  # NOTE: this permanently deletes. If you prefer, set is_active=False instead.
+        messages.success(request, f"User '{username}' deleted.")
+        return redirect("users_directory")
+    return render(request, "admin/user_confirm_delete.html", {"user_obj": u})
+
 
 def create_staff(request):
     if request.method == "POST":

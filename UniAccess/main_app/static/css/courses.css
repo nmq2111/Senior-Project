@@ -134,13 +134,13 @@ body {
 
 .course-form-card {
   background: white;
-  padding: 40px;
-  border-radius: 20px;
-  max-width: 800px;
+  padding: 2.5rem 3rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
   width: 100%;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  max-width: 950px;
+  margin: 0 auto; /* Center horizontally */
 }
-
 .form-title {
   text-align: center;
   font-weight: 700;
@@ -391,4 +391,73 @@ h2 {
   background: #f1f1f1;
   padding: 2px 6px;
   border-radius: 4px;
+}
+.course-form-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+  background-color: #f8f9fc;
+  min-height: 100vh;
+}
+
+.form-title {
+  text-align: center;
+  color: #d1001f;
+  font-weight: 600;
+  margin-bottom: 2rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #444;
+}
+
+input[type='text'],
+input[type='number'],
+input[type='time'],
+select {
+  padding: 0.6rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  background-color: #fff;
+  transition: border-color 0.3s ease;
+}
+
+input:focus,
+select:focus {
+  border-color: #d1001f;
+  outline: none;
+}
+
+.form-actions {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.btn-red {
+  background-color: #d1001f;
+  color: white;
+  padding: 0.6rem 2rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-red:hover {
+  background-color: #b6001b;
 }

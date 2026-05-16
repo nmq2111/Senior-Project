@@ -1,9 +1,7 @@
 import json
 from datetime import datetime
-
 from dataclasses import dataclass
 from typing import Tuple
-
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
@@ -15,7 +13,6 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
-
 from ..forms import recent_unassigned_uids
 from main_app.models import Attendance, Enrollment, CourseInfo
 

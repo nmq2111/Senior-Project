@@ -1,35 +1,71 @@
 {% extends 'base.html' %} {% load static %} {% block styles %}
 <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
 {% endblock %} {% block content %}
-<div class="profile-wrapper">
-  <div class="profile-card">
-    <div class="profile-avatar">
-      <img
-        src="{{ user.profile.avatar.url|default:'/static/images/default-avatar.png' }}"
-        alt="Avatar"
-      />
+
+<div class="profile-page">
+  <div class="profile-card-modern">
+    <!-- HEADER -->
+    <div class="profile-top">
+      <div class="profile-avatar-modern">
+        <img
+          src="{{ user.profile.avatar.url|default:'/static/images/default-avatar.png' }}"
+          alt="Avatar"
+        />
+      </div>
+
+      <h2>{{ user.username }}</h2>
+
+      <p class="profile-role">{{ user.role }}</p>
+
+      <a href="{% url 'edit_profile' %}" class="profile-edit-btn">
+        <i class="fa-solid fa-pen"></i>
+        Edit Profile
+      </a>
     </div>
 
-    <h3 class="profile-username">{{ user.username }}</h3>
+    <!-- INFO -->
+    <div class="profile-grid">
+      <div class="profile-info-card">
+        <span>Full Name</span>
+        <strong style="color: rgba(0, 0, 0, 0.801)"
+          >{{ user.get_full_name|default:"Not provided" }}</strong
+        >
+      </div>
 
-    <a href="{% url 'edit_profile' %}" class="edit-btn">Edit Profile</a>
+      <div class="profile-info-card">
+        <span>Email</span>
+        <strong style="color: rgba(0, 0, 0, 0.801)">{{ user.email }}</strong>
+      </div>
 
-    <div class="profile-info-box">
-      <strong>Full name</strong> {{ user.get_full_name }}
-    </div>
+      <div class="profile-info-card">
+        <span>ID</span>
+        <strong style="color: rgba(0, 0, 0, 0.801)"
+          >{{ user.custom_id }}</strong
+        >
+      </div>
 
-    <div class="profile-info-box"><strong>Role</strong> {{ user.role }}</div>
-    <div class="profile-info-box">
-      <strong>college</strong> {{ user.college }}
-    </div>
-    <div class="profile-info-box"><strong>ID</strong> {{ user.custom_id }}</div>
-    <div class="profile-info-box"><strong>Email</strong> {{ user.email }}</div>
-    <div class="profile-info-box">
-      <strong>Phone</strong> {{ user.profile.phone|default:'-' }}
-    </div>
-    <div class="profile-info-box">
-      <strong>Bio</strong> {{ user.profile.bio|default:'No bio provided.' }}
+      <div class="profile-info-card">
+        <span>College</span>
+        <strong style="color: rgba(0, 0, 0, 0.801)"
+          >{{ user.college|default:"-" }}</strong
+        >
+      </div>
+
+      <div class="profile-info-card">
+        <span>Phone</span>
+        <strong style="color: rgba(0, 0, 0, 0.801)"
+          >{{ user.profile.phone|default:"-" }}</strong
+        >
+      </div>
+
+      <div class="profile-info-card full-card">
+        <span>Bio</span>
+        <strong style="color: rgba(0, 0, 0, 0.801)">
+          {{ user.profile.bio|default:"No bio provided yet." }}
+        </strong>
+      </div>
     </div>
   </div>
 </div>
+
 {% endblock %}
