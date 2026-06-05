@@ -40,8 +40,8 @@
     <div class="col-sm-6 col-lg-4">
       <div class="kpi-card">
         <div class="num fs-5">
-          {{ todays_classes|length }} Class{{
-          todays_classes|length|pluralize:"es" }} {% if next_class %}
+          {{ todays_classes|length }}
+          Class{{todays_classes|length|pluralize:"es" }} {% if next_class %}
           <div class="text-muted fs-6 mt-1 fw-normal">
             Next: <code>{{ next_class.course.code }}</code> at {{
             next_class.start_time|time:"H:i" }}
@@ -168,13 +168,11 @@
             </td>
             <td class="nowrap">
               <span class="small fw-medium text-dark"
-                >{{ e.course_info.start_time|time:"H:i" }}–{{
-                e.course_info.end_time|time:"H:i" }}</span
+                >{{e.course_info.start_time|time:"H:i"}}–{{e.course_info.end_time|time:"H:i"}}</span
               >
             </td>
             <td class="nowrap small">
-              {{ e.course_info.year }} / {{ e.course_info.get_semester_display
-              }}
+              {{ e.course_info.year }} / {{ e.course_info.get_semester_display}}
             </td>
             <td class="nowrap">
               {% if e.attendance_warning_level|default_if_none:0|add:0 == 0 %}
@@ -354,47 +352,126 @@
   </div>
 </div>
 
-{{ att_pie|json_script:"att-pie-data" }} {{
-warn_bars|json_script:"warn-bar-data" }}
+{{att_pie|json_script:"att-pie-data"}}{{warn_bars|json_script:"warn-bar-data"}}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
 <script>
   ;(function () {
-    const pieSrc = JSON.parse(
-      document.getElementById('att-pie-data').textContent
-    )
-    const warnSrc = JSON.parse(
-      document.getElementById('warn-bar-data').textContent
-    )
+    function parseJsonScript(id) {
+      const element = document.getElementById(id)
 
-    new Chart(document.getElementById('attPie').getContext('2d'), {
-      type: 'pie',
-      data: {
-        labels: pieSrc.labels,
-        datasets: [{ data: pieSrc.data }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } }
+      if (!element) {
+        console.error(`Missing JSON script: ${id}`)
+        return null
       }
-    })
 
-    new Chart(document.getElementById('warnBars').getContext('2d'), {
-      type: 'bar',
-      data: {
-        labels: warnSrc.labels,
-        datasets: [{ data: warnSrc.data, backgroundColor: '#ff4d5a' }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } }
+      let data = JSON.parse(element.textContent)
+
+      // Handle double-encoded JSON
+      if (typeof data === 'string') {
+        data = JSON.parse(data)
+      }
+
+      return data
+    }
+
+    const pieSrc = parseJsonScript('att-pie-data')
+    const warnSrc = parseJsonScript('warn-bar-data')
+
+    console.log('Attendance Data:', pieSrc)
+    console.log('Warning Data:', warnSrc)
+
+    /* ==========================
+       Attendance Pie Chart
+    ========================== */
+
+    if (pieSrc && Array.isArray(pieSrc.data) && pieSrc.data.length) {
+      const total = pieSrc.data.reduce(
+        (sum, value) => sum + Number(value || 0),
+        0
+      )
+
+      if (total > 0) {
+        new Chart(document.getElementById('attPie'), {
+          type: 'pie',
+          data: {
+            labels: pieSrc.labels,
+            datasets: [
+              {
+                data: pieSrc.data,
+                backgroundColor: ['#198754', '#ffc107', '#dc3545']
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              }
+            }
+          }
+        })
+      } else {
+        document.getElementById('attPie').parentElement.innerHTML = `
+                <div class="d-flex justify-content-center align-items-center h-100 text-muted">
+                    No attendance data available.
+                </div>
+                `
+      }
+    }
+
+    /* ==========================
+       Warning Level Chart
+    ========================== */
+
+    if (
+      warnSrc &&
+      warnSrc.labels &&
+      warnSrc.data &&
+      warnSrc.labels.length > 0
+    ) {
+      new Chart(document.getElementById('warnBars'), {
+        type: 'bar',
+        data: {
+          labels: warnSrc.labels,
+          datasets: [
+            {
+              label: 'Warning Level',
+              data: warnSrc.data,
+              backgroundColor: '#e30613',
+              borderRadius: 8
+            }
+          ]
         },
-        plugins: { legend: { display: false } }
-      }
-    })
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1,
+                precision: 0
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      })
+    } else {
+      document.getElementById('warnBars').parentElement.innerHTML = `
+        <div class="text-center text-muted py-5">
+            No warning data available.
+        </div>
+    `
+    }
   })()
 </script>
 {% endblock %}

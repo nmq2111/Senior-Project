@@ -1,27 +1,82 @@
-{% extends 'base.html' %} {% load static %} {% block styles %}
-<link rel="stylesheet" href="{% static 'css/courses.css' %}" />
+{% extends 'base.html' %} {% block styles %}
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+/>
+
 {% endblock %} {% block content %}
 <div class="course-detail-wrapper">
   <div class="course-detail-card">
     <h2 class="course-code">{{ course.course.code }}</h2>
-    <p><strong>Course Name:</strong> {{ course.course.name }}</p>
-    <p><strong>Teacher:</strong> {{ course.teacher.get_full_name }}</p>
-    <p><strong>Year:</strong> {{ course.year }}</p>
-    <p><strong>Semester:</strong> {{ course.get_semester_display }}</p>
-    <p><strong>College:</strong> {{ course.course.get_college_display }}</p>
-    <p><strong>Class:</strong> {{ course.class_name }}</p>
-    <p><strong>Section:</strong> {{ course.section }}</p>
-    <p><strong>Capacity:</strong> {{ course.capacity }}</p>
-    <p>
-      <strong>enrollments:</strong> {{ course.enrollments.count|default:0 }}
-    </p>
 
-    <p><strong>Session Type:</strong> {{ course.get_session_type_display }}</p>
+    <div class="course-detail-item">
+      <span class="label">Course Name :</span>
+      <span class="value">{{ course.course.name }}</span>
+    </div>
 
-    <p><strong>Days:</strong> {{ course.get_days_display }}</p>
-    <p><strong>Status:</strong> {{ course.get_status_display }}</p>
-    <p><strong>Start Time:</strong> {{ course.start_time }}</p>
-    <p><strong>End Time:</strong> {{ course.end_time }}</p>
+    <div class="course-detail-item">
+      <span class="label">Teacher :</span>
+      <span class="value">{{ course.teacher.get_full_name }}</span>
+    </div>
+
+    <div class="course-detail-item">
+      <span class="label">Year :</span>
+      <span class="value">{{ course.year }}</span>
+    </div>
+    <div class="course-detail-item">
+      <span class="label">Semester :</span>
+      <span class="value">{{ course.get_semester_display }}</span>
+    </div>
+
+    <div class="course-detail-item">
+      <span class="label">College :</span>
+      <span class="value">{{ course.course.get_college_display }}</span>
+    </div>
+
+    <div class="course-detail-item">
+      <span class="label">Class :</span>
+      <span class="value">{{ course.class_name }}</span>
+    </div>
+
+    <div class="course-detail-item">
+      <span class="label">Section :</span>
+      <span class="value">{{ course.section }}</span>
+    </div>
+
+    <div class="course-detail-item">
+      <span class="label">Capacity :</span>
+      <span class="value">{{ course.capacity }}</span>
+    </div>
+
+    <div class="course-detail-item">
+      <span class="label">enrollments :</span>
+      <span class="value">{{ course.enrollments.count|default:0 }}</span>
+    </div>
+
+    <div class="course-detail-item">
+      <span class="label">Session Type :</span>
+      <span class="value">{{ course.get_session_type_display }}</span>
+    </div>
+
+    <div class="course-detail-item">
+      <span class="label">Days :</span>
+      <span class="value">{{ course.get_days_display }}</span>
+    </div>
+
+    <div class="course-detail-item">
+      <span class="label">Status :</span>
+      <span class="value">{{ course.get_status_display }}</span>
+    </div>
+
+    <div class="course-detail-item">
+      <span class="label">Start Time :</span>
+      <span class="value">{{ course.start_time }}</span>
+    </div>
+
+    <div class="course-detail-item">
+      <span class="label">End Time :</span>
+      <span class="value">{{ course.end_time }}</span>
+    </div>
   </div>
 
   <div class="course-buttons">

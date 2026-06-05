@@ -3,55 +3,62 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="text-danger mb-0">Users Directory</h2>
+<div style="padding: 8px 0;">
+
+  <div class="page-header">
+    <h2>Users Directory</h2>
+    <div class="page-actions">
+      <a href="{% url 'admin_create_student' %}" class="btn-create-student">&#43; New Student</a>
+      <a href="{% url 'create_staff' %}" class="btn-create-staff">&#43; New Staff</a>
+    </div>
   </div>
 
-  
-  <form method="get" class="row g-3 align-items-end mb-5">
-    <div class="col-md-4">
-      <label class="form-label">Search</label>
-      <input type="text" name="q" class="form-control" value="{{ q }}" placeholder="username / name / email / ID">
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">College</label>
-      <select class="form-select" name="college">
-        <option value="">All colleges</option>
-        {% for val, label in college_opts %}
-          <option value="{{ val }}" {% if college == val %}selected{% endif %}>{{ label }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Year (registration)</label>
-      <select class="form-select" name="year">
-        <option value="">All years</option>
-        {% for y in year_opts %}
-          <option value="{{ y }}" {% if year|stringformat:"s" == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-2">
-      <button type="submit" class="btn btn-outline-danger w-100">Apply</button>
+  <!-- Filters -->
+  <form method="get" class="filter-card">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="username / name / email / ID">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">College</label>
+        <select name="college">
+          <option value="">All colleges</option>
+          {% for val, label in college_opts %}
+            <option value="{{ val }}" {% if college == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Year (registered)</label>
+        <select name="year">
+          <option value="">All years</option>
+          {% for y in year_opts %}
+            <option value="{{ y }}" {% if year|stringformat:"s" == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn-filter-apply">Apply</button>
+      </div>
     </div>
   </form>
 
   <!-- Students Table -->
-  <div class="card shadow-sm mb-5">
-    <div class="card-header bg-danger text-white d-flex justify-content-between">
+  <div class="dir-card">
+    <div class="dir-card-header">
       <strong>Students</strong>
-      <span>Total: {{ students|length }}</span>
+      <span class="count-pill">{{ students|length }} total</span>
     </div>
-    <div class="table-responsive">
-      <table class="table table-striped table-hover align-middle mb-0">
-        <thead class="table-light">
+    <div style="overflow-x: auto;">
+      <table class="dir-table">
+        <thead>
           <tr>
             <th>Username</th>
             <th>Full Name</th>
@@ -59,13 +66,13 @@
             <th>College</th>
             <th>RFID Tag</th>
             <th>Email</th>
-            <th class="text-end">Actions</th>
+            <th style="text-align:right;">Actions</th>
           </tr>
         </thead>
         <tbody>
           {% for u in students %}
             <tr>
-              <td>{{ u.username }}</td>
+              <td style="font-weight:600;">{{ u.username }}</td>
               <td>{{ u.first_name }} {{ u.last_name }}</td>
               <td><code>{{ u.custom_id }}</code></td>
               <td>
@@ -77,79 +84,78 @@
                 {% if u.rfid_tag %}
                   <code>{{ u.rfid_tag.tag_uid }}</code>
                 {% else %}
-                  <span class="text-muted">—</span>
+                  <span style="color:rgba(255,255,255,0.3);">—</span>
                 {% endif %}
               </td>
-              <td>{{ u.email }}</td>
-              <td class="text-end">  
-                 <a class="btn btn-sm btn-outline-danger" href="{% url 'admin_user_edit' u.id %}">Edit</a>
-                 <form method="post" action="{% url 'admin_user_delete' u.id %}" class="d-inline" onsubmit="return confirm('Delete this user? This cannot be undone.');"> {% csrf_token %}
-                  <button class="btn btn-sm btn-outline-danger">Delete</button>
-                </form>
+              <td style="font-size:13px; color:rgba(255,255,255,0.7);">{{ u.email }}</td>
+              <td class="actions-column-cell">
+                <div class="form-actions-right">
+                  <a class="btn btn-outline-danger btn-sm" href="{% url 'admin_user_edit' u.id %}">Edit</a>
+                  <form method="post" action="{% url 'admin_user_delete' u.id %}" class="d-inline"
+                        onsubmit="return confirm('Delete {{ u.username }}? This cannot be undone.');">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+                  </form>
+                </div>
               </td>
             </tr>
           {% empty %}
-            <tr>
-              <td colspan="6" class="text-center text-muted">No students found.</td>
-            </tr>
+            <tr class="empty-row"><td colspan="7">No students found.</td></tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
 
+<hr/>
   <!-- Staff Table -->
-  <div class="card shadow-sm mb-5">
-    <div class="card-header bg-danger text-white d-flex justify-content-between">
+  <div class="dir-card">
+    <div class="dir-card-header">
       <strong>Staff</strong>
-      <span>Total: {{ staff|length }}</span>
+      <span class="count-pill">{{ staff|length }} total</span>
     </div>
-    <div class="table-responsive">
-      <table class="table table-striped table-hover align-middle mb-0">
-        <thead class="table-light">
+    <div style="overflow-x: auto;">
+      <table class="dir-table">
+        <thead>
           <tr>
             <th>Username</th>
             <th>Full Name</th>
             <th>Role</th>
             <th>College</th>
             <th>Email</th>
-            <th class="text-end">Actions</th> 
+            <th style="text-align:right;">Actions</th>
           </tr>
         </thead>
         <tbody>
           {% for u in staff %}
             <tr>
-              <td>{{ u.username }}</td>
+              <td style="font-weight:600;">{{ u.username }}</td>
               <td>{{ u.first_name }} {{ u.last_name }}</td>
-              <td><span class="badge bg-info text-dark">{{ u.role|title }}</span></td>
+              <td><span class="role-badge">{{ u.role|title }}</span></td>
               <td>
                 {% for val, label in college_opts %}
                   {% if u.college == val %}{{ label }}{% endif %}
                 {% endfor %}
               </td>
-              <td>{{ u.email }}</td>
-              <td class="text-end"> 
-        <a class="btn btn-sm btn-outline-danger"
-           href="{% url 'admin_user_edit' u.id %}">
-          Edit
-        </a>
-        <form method="post"
-              action="{% url 'admin_user_delete' u.id %}"
-              class="d-inline"
-              onsubmit="return confirm('Delete this user?');">
-          {% csrf_token %}
-          <button class="btn btn-sm btn-outline-danger">Delete</button>
-        </form>
-      </td>
+              <td style="font-size:13px; color:rgba(255,255,255,0.7);">{{ u.email }}</td>
+              <td>
+                <div class="action-group">
+                  <a class="btn btn-outline-danger btn-sm" href="{% url 'admin_user_edit' u.id %}">Edit</a>
+                  <form method="post" action="{% url 'admin_user_delete' u.id %}" class="d-inline"
+                        onsubmit="return confirm('Delete {{ u.username }}?');">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+                  </form>
+                </div>
+              </td>
             </tr>
           {% empty %}
-            <tr>
-              <td colspan="5" class="text-center text-muted">No staff found.</td>
-            </tr>
+            <tr class="empty-row"><td colspan="6">No staff found.</td></tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
+
 </div>
 {% endblock %}

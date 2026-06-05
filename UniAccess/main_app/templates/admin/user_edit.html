@@ -3,49 +3,62 @@
   href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
   rel="stylesheet"
 />
+
 {% endblock %} {% block content %}
-<div class="container py-4">
-  <h2 class="text-danger mb-4">Edit User — {{ user_obj.username }}</h2>
+<div class="edit-wrap">
+  <div class="page-header">
+    <h2>Edit User</h2>
+    <span class="username-pill">{{ user_obj.username }}</span>
+  </div>
 
-  <form method="post" class="card shadow-sm p-3">
-    {% csrf_token %}
-
-    <div class="row g-3">
-      {% for field in form.visible_fields %}
-      <div class="col-md-6">
-        <label class="form-label" for="{{ field.id_for_label }}"
-          >{{ field.label }}</label
-        >
-        {{ field }} {% if field.help_text %}
-        <div class="form-text">{{ field.help_text }}</div>
-        {% endif %} {% if field.errors %}
-        <div class="text-danger small">{{ field.errors|join:", " }}</div>
-        {% endif %}
-      </div>
-      {% endfor %}
+  <div class="edit-card">
+    <div class="edit-card-header">
+      <strong>Profile Details</strong>
     </div>
+    <div class="edit-card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
 
-    <div class="mt-4 d-flex gap-2">
-      <button type="submit" class="btn btn-danger">Save</button>
-      <a href="{% url 'users_directory' %}" class="btn btn-outline-secondary"
-        >Cancel</a
-      >
+        <div class="row g-3 mb-4">
+          {% for field in form.visible_fields %}
+          <div class="col-md-6">
+            <div class="field-group">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }} {% if field.help_text %}
+              <div class="form-text">{{ field.help_text }}</div>
+              {% endif %} {% if field.errors %}
+              <div class="field-error">{{ field.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="d-flex gap-3 align-items-center">
+          <button type="submit" class="btn-save">Save Changes</button>
+          <a href="{% url 'users_directory' %}" class="btn-back">Cancel</a>
+        </div>
+      </form>
     </div>
-  </form>
+  </div>
 
-  <div class="mt-4">
+  <!-- Danger Zone -->
+  <div class="danger-card">
+    <div class="danger-info">
+      <h6>Delete Account</h6>
+      <p>
+        Permanently remove this user and all associated data. Tip: deactivate
+        instead to preserve records.
+      </p>
+    </div>
     <form
       method="post"
       action="{% url 'admin_user_delete' user_obj.id %}"
-      onsubmit="return confirm('Delete this user? This cannot be undone.');"
+      onsubmit="return confirm('Delete {{ user_obj.username }}? This cannot be undone.');"
     >
       {% csrf_token %}
-      <button class="btn btn-outline-danger">Delete User</button>
+      <button class="btn-danger-delete" type="submit">Delete User</button>
     </form>
-    <div class="form-text mt-2">
-      Tip: If you prefer not to delete, uncheck <b>Is active</b> and Save to
-      deactivate the account.
-    </div>
   </div>
 </div>
 {% endblock %}

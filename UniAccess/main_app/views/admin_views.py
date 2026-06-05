@@ -233,23 +233,3 @@ def attendance_list(request):
     }
     return render(request, "admin/attendance_list.html", context)
 
-@staff_member_required
-def registration_control(request):
-    effective = is_registration_open()
-    override = cache.get("registration:is_open")
-
-    if request.method == "POST":
-        val = request.POST.get("is_open")
-        if val == "clear":
-            cache.delete("registration:is_open")
-            messages.success(request, "Override cleared — using settings/date window now.")
-        else:
-            is_open = (val == "1")
-            cache.set("registration:is_open", is_open, timeout=None)
-            messages.success(request, f"Add/Drop is now forced to {'OPEN' if is_open else 'CLOSED'}.")
-        return redirect("registration_control")
-
-    return render(request, "admin/registration_control.html", {
-        "effective": effective,
-        "override": override,
-    })

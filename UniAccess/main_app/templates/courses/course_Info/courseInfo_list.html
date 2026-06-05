@@ -14,8 +14,6 @@
     {% if user.role == "admin" or user.is_superuser  %}
     <div>
       <a class="btn btn-danger" href="{% url 'courseInfo_create' %}">+ Add Course</a>
-      <a href="{% url 'registration_control' %}" class="btn btn-danger"
-            >  <i class="fa-solid fa-screwdriver-wrench"></i> registration control</a>
           </div>
     {% endif %}
   </div>
@@ -111,7 +109,7 @@
             </td>
           </tr>
           {% empty %}
-          <tr><td colspan="5" class="text-center text-muted">No sections found.</td></tr>
+          <tr><td colspan="6" class="text-center text-muted">No sections found.</td></tr>
           {% endfor %}
         </tbody>
       </table>

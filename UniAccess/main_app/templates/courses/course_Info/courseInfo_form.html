@@ -1,109 +1,159 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'base.html' %} {% load static %} {% block styles %}
+<link rel="stylesheet" href="{% static 'css/courses.css' %}" />
+{% endblock %} {% block content %}
+<div class="container">
+  <div class="card">
+    <div class="card-body">
+      <h2 class="form-title">Course Section Management</h2>
 
-{% block styles %}
-<link rel="stylesheet" href="{% static 'css/courses.css' %}">
-{% endblock %}
+      <p class="form-subtitle">
+        Create and manage course sections, schedules, instructors, and
+        enrollment capacity.
+      </p>
 
-{% block content %}
-<div class="course-form-wrapper">
-  <div class="course-form-card">
-    <h2 class="form-title">Course Info</h2>
+      <form method="POST">
+        {% csrf_token %}
 
-    <form method="POST">
-      {% csrf_token %}
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="id_course">Course Code & Name</label>
+            {{ form.course }}
+          </div>
 
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="id_course">Course:</label>
-          {{ form.course }}
+          <div class="form-group">
+            <label for="id_teacher">Assigned Instructor</label>
+            {{ form.teacher }}
+          </div>
+
+          <div class="form-group">
+            <label for="id_year">Academic Year</label>
+            {{ form.year }}
+          </div>
+
+          <div class="form-group">
+            <label for="id_semester">Academic Semester</label>
+            {{ form.semester }}
+          </div>
+
+          <div class="form-group">
+            <label for="id_section">Section Number</label>
+            {{ form.section }}
+          </div>
+
+          <div class="form-group">
+            <label for="id_class_name">Class Identifier</label>
+            {{ form.class_name }}
+          </div>
+
+          <div class="form-group">
+            <label for="id_capacity">Maximum Capacity</label>
+            {{ form.capacity }}
+          </div>
+
+          <div class="form-group">
+            <label for="id_session_type">Session Format</label>
+            <select
+              name="session_type"
+              id="id_session_type"
+              onchange="calculateEndTime()"
+            >
+              <option
+                value="lecture"
+                {%
+                if
+                form.session_type.value=""
+                ="lecture"
+                %}selected{%
+                endif
+                %}
+              >
+                Lecture (50 Minutes)
+              </option>
+
+              <option
+                value="lab"
+                {%
+                if
+                form.session_type.value=""
+                ="lab"
+                %}selected{%
+                endif
+                %}
+              >
+                Laboratory (100 Minutes)
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="id_days">Scheduled Days</label>
+            {{ form.days }}
+          </div>
+
+          <div class="form-group">
+            <label for="id_status">Course Status</label>
+            {{ form.status }}
+          </div>
+
+          <div class="form-group">
+            <label for="id_start_time">Session Start Time</label>
+            <input
+              type="time"
+              name="start_time"
+              id="id_start_time"
+              value="{{ form.start_time.value|default_if_none:'' }}"
+              onchange="calculateEndTime()"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="id_end_time">Session End Time</label>
+            <input
+              type="time"
+              name="end_time"
+              id="id_end_time"
+              value="{{ form.end_time.value|default_if_none:'' }}"
+              required
+            />
+          </div>
         </div>
 
-        <div class="form-group">
-          <label for="id_teacher">Teacher:</label>
-          {{ form.teacher }}
-        </div>
+        <div class="mt-4 d-flex gap-2">
+          <button type="submit" class="btn btn-danger">
+            Save Course Section
+          </button>
 
-        <div class="form-group">
-          <label for="id_year">Year:</label>
-          {{ form.year }}
+          <a href="{% url 'courseInfo_list' %}" class="btn btn-outline-danger">
+            Cancel
+          </a>
         </div>
-
-        <div class="form-group">
-          <label for="id_semester">Semester:</label>
-          {{ form.semester }}
-        </div>
-
-        <div class="form-group">
-          <label for="id_semester">Section:</label>
-          {{ form.section }}
-        </div>
-
-        <div class="form-group">
-          <label for="id_class_name">Class Name:</label>
-          {{ form.class_name }}
-        </div>
-
-        <div class="form-group">
-          <label for="id_capacity">Capacity:</label>
-          {{ form.capacity }}
-        </div>
-
-        <div class="form-group">
-          <label for="id_session_type">Session Type:</label>
-          <select name="session_type" id="id_session_type" onchange="calculateEndTime()">
-            <option value="lecture" {% if form.session_type.value == 'lecture' %}selected{% endif %}>Lecture (50 min)</option>
-            <option value="lab" {% if form.session_type.value == 'lab' %}selected{% endif %}>Lab (100 min)</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="id_days">Days:</label>
-          {{ form.days }}
-        </div>
-
-        <div class="form-group">
-          <label for="id_status">Status:</label>
-          {{ form.status }}
-        </div>
-
-        <div class="form-group">
-          <label for="id_start_time">Start Time:</label>
-          <input type="time" name="start_time" id="id_start_time" value="{{ form.start_time.value|default_if_none:'' }}" onchange="calculateEndTime()" required>
-        </div>
-
-        <div class="form-group">
-          <label for="id_end_time">End Time:</label>
-          <input type="time" name="end_time" id="id_end_time" required>
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <button type="submit" class="btn-red">Save Course Info</button>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 </div>
 
 <script>
-function calculateEndTime() {
-    const sessionType = document.getElementById('id_session_type').value;
-    const startTime = document.getElementById('id_start_time').value;
+  function calculateEndTime() {
+    const sessionType = document.getElementById('id_session_type').value
+    const startTime = document.getElementById('id_start_time').value
 
-    if (!startTime) return;
+    if (!startTime) return
 
-    let [hour, minute] = startTime.split(':').map(Number);
-    let addMinutes = sessionType === 'lab' ? 100 : 50;
+    let [hour, minute] = startTime.split(':').map(Number)
 
-    minute += addMinutes;
-    hour += Math.floor(minute / 60);
-    minute = minute % 60;
+    const addMinutes = sessionType === 'lab' ? 100 : 50
 
-    const endHour = String(hour).padStart(2, '0');
-    const endMinute = String(minute).padStart(2, '0');
-    const endTime = `${endHour}:${endMinute}`;
+    minute += addMinutes
+    hour += Math.floor(minute / 60)
+    minute %= 60
 
-    document.getElementById('id_end_time').value = endTime;
-}
+    const endHour = String(hour).padStart(2, '0')
+    const endMinute = String(minute).padStart(2, '0')
+
+    document.getElementById('id_end_time').value = `${endHour}:${endMinute}`
+  }
+
+  document.addEventListener('DOMContentLoaded', calculateEndTime)
 </script>
 {% endblock %}

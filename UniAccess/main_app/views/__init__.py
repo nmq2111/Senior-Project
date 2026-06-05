@@ -5,7 +5,7 @@ from .course_views import courses_list , CourseCreate , CourseEdit , CourseDelet
 from .attendance_views import latest_unassigned_uids_api, find_current_courseinfo_for_student , maybe_update_warning_and_notify , _weekday_tokens , student_checkout_api
 from .attendance_api import is_student_enrolled, tag_to_student , rfid_scan
 
-from .admin_views import _student_year_options , users_directory , create_staff , admin_create_student, attendance_list , registration_control, admin_user_delete, admin_user_edit
+from .admin_views import _student_year_options , users_directory , create_staff , admin_create_student, attendance_list , admin_user_delete, admin_user_edit
 
 
 from .teacher_views import teacher_attendance_list , teacher_take_attendance , TeacherAttendanceEdit , attendance_take_C , teacher_userbase , finish_lecture

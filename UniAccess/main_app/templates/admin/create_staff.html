@@ -1,101 +1,130 @@
 {% extends 'base.html' %} {% load static %} {% block styles %}
 <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
 <link
-  href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
   rel="stylesheet"
 />
 <link
   href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
   rel="stylesheet"
 />
+
 {% endblock %} {% block content %}
-<div
-  class="d-flex align-items-center justify-content-center min-vh-100"
-  style="background-color: #f5f7fa"
->
-  <div
-    class="shadow-lg p-5 bg-white rounded"
-    style="width: 100%; max-width: 900px; border-radius: 20px"
-  >
-    <div class="text-center mb-4">
-      <h2 class="fw-bold text-danger">Create new Account</h2>
+<div class="form-page-wrap">
+  <div class="form-glass">
+    <div class="form-glass-header">
+      <h4>&#43; Create New Staff Account</h4>
     </div>
 
-    {% if messages %} {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} mb-3" role="alert">
-      {{ message }}
+    <div class="form-glass-body">
+      {% if messages %} {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} mb-4" role="alert">
+        {{ message }}
+      </div>
+      {% endfor %} {% endif %} {% if form.errors %}
+      <div class="alert alert-danger mb-4">
+        Please correct the errors below.
+      </div>
+      {% endif %} {{ form.non_field_errors }}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="field-group">
+              <label for="{{ form.username.id_for_label }}">Username</label>
+              {{ form.username }} {% if form.username.errors %}
+              <div class="field-error">{{ form.username.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="field-group">
+              <label for="{{ form.email.id_for_label }}">Email</label>
+              {{ form.email }} {% if form.email.errors %}
+              <div class="field-error">{{ form.email.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="field-group">
+              <label for="{{ form.first_name.id_for_label }}">First Name</label>
+              {{ form.first_name }} {% if form.first_name.errors %}
+              <div class="field-error">{{ form.first_name.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="field-group">
+              <label for="{{ form.last_name.id_for_label }}">Last Name</label>
+              {{ form.last_name }} {% if form.last_name.errors %}
+              <div class="field-error">{{ form.last_name.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="field-group">
+              <label for="{{ form.phone.id_for_label }}">Phone</label>
+              {{ form.phone }} {% if form.phone.errors %}
+              <div class="field-error">{{ form.phone.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="field-group">
+              <label for="{{ form.college.id_for_label }}">College</label>
+              {{ form.college }} {% if form.college.errors %}
+              <div class="field-error">{{ form.college.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Password -->
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="field-group">
+              <label for="{{ form.password1.id_for_label }}">Password</label>
+              {{ form.password1 }} {% if form.password1.errors %}
+              <div class="field-error">{{ form.password1.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="field-group">
+              <label for="{{ form.password2.id_for_label }}"
+                >Confirm Password</label
+              >
+              {{ form.password2 }} {% if form.password2.errors %}
+              <div class="field-error">{{ form.password2.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Role -->
+        <div class="row g-3 mb-4">
+          <div class="col-12">
+            <div class="field-group">
+              <label for="{{ form.role.id_for_label }}">Role</label>
+              {{ form.role }} {% if form.role.errors %}
+              <div class="field-error">{{ form.role.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="btn-primary w-100"
+          style="padding: 16px; font-size: 15px"
+        >
+          Create Account
+        </button>
+      </form>
     </div>
-    {% endfor %} {% endif %} {% if form.errors %}
-    <div class="alert alert-danger">Please correct the errors below.</div>
-    {% endif %}
-
-    <form method="post" novalidate>
-      {% csrf_token %} {% csrf_token %} {{ form.non_field_errors }}
-
-      <div class="row">
-        <label>Username</label>
-        {{ form.username }} {% if form.username.errors %}
-        <div class="text-danger small mt-1">{{ form.username.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="row">
-        <label>First Name</label>
-        {{ form.first_name }} {% if form.first_name.errors %}
-        <div class="text-danger small mt-1">{{ form.first_name.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="row">
-        <label>Last Name</label>
-        {{ form.last_name }} {% if form.last_name.errors %}
-        <div class="text-danger small mt-1">{{ form.last_name.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="row">
-        <label>Email</label>
-        {{ form.email }} {% if form.email.errors %}
-        <div class="text-danger small mt-1">{{ form.email.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="row">
-        <label>Phone</label>
-        {{ form.phone }} {% if form.phone.errors %}
-        <div class="text-danger small mt-1">{{ form.phone.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="row">
-        <label>Password</label>
-        {{ form.password1 }} {% if form.password1.errors %}
-        <div class="text-danger small mt-1">{{ form.password1.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="row">
-        <label>Confirm Password</label>
-        {{ form.password2 }} {% if form.password2.errors %}
-        <div class="text-danger small mt-1">{{ form.password2.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="row">
-        <label>Role</label>
-        {{ form.role }} {% if form.role.errors %}
-        <div class="text-danger small mt-1">{{ form.role.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="row">
-        <label>College</label>
-        {{ form.college }} {% if form.college.errors %}
-        <div class="text-danger small mt-1">{{ form.college.errors }}</div>
-        {% endif %}
-      </div>
-      <div><button type="submit" class="btn-login w-100">Sign Up</button></div>
-    </form>
   </div>
 </div>
 {% endblock %}

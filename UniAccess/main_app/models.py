@@ -112,7 +112,7 @@ class CourseInfo(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                check=models.Q(end_time__gt=models.F('start_time')),
+                condition=models.Q(end_time__gt=models.F('start_time')),
                 name='courseinfo_end_after_start'
             ),
             models.UniqueConstraint(
@@ -241,7 +241,7 @@ class Attendance(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
-    avatar = models.ImageField(upload_to='avatars/', default='avatars/default.jpg')
+    avatar = models.ImageField(upload_to='avatars/', default='avatars/default-avatar.jpg')
     bio = models.TextField(blank=True)
     location = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=20, blank=True)
