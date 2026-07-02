@@ -23,7 +23,7 @@ LATE_PER_ABSENCE = 4
 WARNING_THRESHOLDS = (0.25, 0.50, 0.75)
 HAVE_ATT = True
 
-# === Helpers ===
+
 def _weekday_tokens(ts):
     idx = timezone.localtime(ts).weekday()
     table = {
@@ -172,7 +172,7 @@ def maybe_update_warning_and_notify(student, ci: CourseInfo) -> Tuple[PolicyCalc
                 pass
     return calc, notified
 
-# === Views ===
+
 @staff_member_required
 @require_GET
 def latest_unassigned_uids_api(request):

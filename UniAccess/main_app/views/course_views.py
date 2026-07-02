@@ -17,7 +17,6 @@ User = get_user_model()
 
 MAX_COURSES_PER_STUDENT = 6
 
-# === Helpers ===
 def _parse_dt(s):
     if not s:
         return None
@@ -45,7 +44,7 @@ def is_registration_open():
     return default_open
 
 
-# === Views ===
+
 @login_required
 def courses_list(request):
     q = (request.GET.get("q") or "").strip()
@@ -88,7 +87,7 @@ class CourseEdit(LoginRequiredMixin, UpdateView):
 
 class CourseDelete(LoginRequiredMixin, DeleteView):
     model = Course
-    template_name = "courses/course_confirm_delete.html"
+    template_name = "courses/courses_list.html"
     success_url = reverse_lazy("courses_list")
 
 @login_required
@@ -204,7 +203,7 @@ class CourseInfoCreate(LoginRequiredMixin, CreateView):
 class CourseInfoEdit(LoginRequiredMixin, UpdateView):
     model = CourseInfo
     fields = [
-        "course", "teacher", "year", "semester", "class_name", "capacity",
+        "course", "teacher", "year", "section" , "semester", "class_name", "capacity",
         "session_type", "days", "status", "start_time", "end_time",
     ]
     template_name = "courses/course_Info/courseInfo_form.html"

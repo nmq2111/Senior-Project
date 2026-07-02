@@ -1588,17 +1588,6 @@ footer {
   background: #b4000f;
   transform: translateY(-2px);
 }
-
-.btn-danger {
-  background: #7a0000;
-  color: white;
-}
-
-.btn-danger:hover {
-  background: #5c0000;
-  transform: translateY(-2px);
-}
-
 .btn-gray {
   background: #f1f3f5;
   color: #333;
@@ -1661,4 +1650,65 @@ footer {
     width: 100%;
     text-align: center;
   }
+}
+
+.course-buttons {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.course-buttons form {
+  margin: 0;
+  padding: 0;
+}
+
+.btn-red,
+.course-buttons button.btn-red,
+.col-auto .btn-filter-apply {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 82px;
+  height: 54px;
+
+  padding: 0 24px;
+
+  background: #dc3545;
+  color: white;
+
+  border: none;
+  border-radius: 12px;
+
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  cursor: pointer;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+.btn-red:hover,
+.course-buttons button.btn-red:hover,
+.col-auto .btn-filter-apply:hover {
+  background: #c70011;
+  color: white;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+table code {
+  background: #f6f8fa;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }

@@ -24,7 +24,7 @@ User = get_user_model()
 COOLDOWN_SEC = 3
 LATE_THRESHOLD_MIN = 10
 
-# === Helpers ===
+
 def is_student_enrolled(student, course_info) -> bool:
     if not (student and course_info):
         return False

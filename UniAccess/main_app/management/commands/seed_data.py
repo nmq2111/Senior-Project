@@ -68,14 +68,19 @@ class Command(BaseCommand):
         for i in range(15):
             first, last = get_random_name()
             teacher = CustomUser.objects.create_user(
-                username=f"teacher{i}",
+                username=f"temp_teacher_{i}",
                 password="12345678",
                 first_name=first,
                 last_name=last,
                 email=f"{first.lower()}.{last.lower()}{random.randint(10,99)}@ahlia.edu.bh",
                 role="teacher",
-                college=random.choice(["engineering", "it", "business_finance", "arts_science"]),
-            )
+                college=random.choice([
+                    "engineering",
+                    "it",
+                    "business_finance",
+                    "arts_science",
+                    ]),
+                    )
             Profile.objects.create(
                 user=teacher,
                 bio=f"Professor in the department of {teacher.get_college_display()}.",
@@ -93,14 +98,19 @@ class Command(BaseCommand):
         for i in range(120):
             first, last = get_random_name()
             student = CustomUser.objects.create_user(
-                username=f"student{i}",
+                username=f"temp_student_{i}",
                 password="12345678",
                 first_name=first,
                 last_name=last,
                 email=f"st{timezone.now().year % 100}{random.randint(1000, 9999)}@ahlia.edu.bh",
                 role="student",
-                college=random.choice(["engineering", "it", "business_finance", "arts_science"]),
-            )
+                college=random.choice([
+                    "engineering",
+                    "it",
+                    "business_finance",
+                    "arts_science",
+                    ]),
+                    )
             Profile.objects.create(
                 user=student,
                 bio="Undergraduate Student.",
@@ -211,8 +221,7 @@ class Command(BaseCommand):
         # ---------------------------------------------------
         # REALISTIC ATTENDANCE + SYSTEM RFID SCANS
         # ---------------------------------------------------
-        # Map out days of week back for past schedules
-        # Sunday=6, Monday=0, Tuesday=1, Wednesday=2, Thursday=3, Friday=4, Saturday=5 in python weekday format
+  
         days_mapping = {
             'mw': [0, 2],       # Mon, Wed
             'uth': [6, 1, 3],   # Sun, Tue, Thu

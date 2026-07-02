@@ -22,11 +22,10 @@
     </div>
   </div>
 
-  <!-- Filters -->
   <form method="get" class="filters row g-2 align-items-end mb-4">
     <div class="col-auto">
       <label class="form-label">Search</label>
-      <input type="text" class="form-control" name="q" value="{{ q }}" placeholder="code / name / class / teacher">
+      <input type="text" name="q" value="{{ q }}" placeholder="code / name / class / teacher">
     </div>
 
     <div class="col-auto">
@@ -53,11 +52,11 @@
 
     <div class="col-auto">
       <label class="form-label">From</label>
-      <input type="date" class="form-control" name="start" value="{{ start }}">
+      <input type="date"  name="start" value="{{ start }}">
     </div>
     <div class="col-auto">
       <label class="form-label">To</label>
-      <input type="date" class="form-control" name="end" value="{{ end }}">
+      <input type="date" name="end" value="{{ end }}">
     </div>
 
     <div class="col-auto">
@@ -82,7 +81,7 @@
     </div>
   </form>
 
-  <!-- Table -->
+
   <div class="card shadow-sm mb-5">
     <div class="card-header bg-danger text-white d-flex justify-content-between">
       <strong>Attendance Records</strong>

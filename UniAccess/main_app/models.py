@@ -37,13 +37,23 @@ class CustomUser(AbstractUser):
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
+
         super().save(*args, **kwargs)
+
         if is_new and not self.custom_id:
             year = timezone.now().year
-            prefix = {'student': 'S', 'teacher': 'T', 'admin': 'A'}.get(self.role, 'X')
+            prefix = {
+                'student': 'S',
+                'teacher': 'T',
+                'admin': 'A'
+            }.get(self.role, 'X')
+
             number_part = f"{self.id:04d}"
             self.custom_id = f"{prefix}{year}{number_part}"
-            super().save(update_fields=['custom_id'])
+
+            self.username = self.custom_id
+
+            super().save(update_fields=['custom_id', 'username'])
 
     def __str__(self):
         return f"{self.username} ({self.custom_id or 'no-id'})"

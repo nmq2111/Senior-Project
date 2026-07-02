@@ -17,7 +17,7 @@ from main_app.models import Attendance, CourseInfo, Enrollment
 
 User = get_user_model()
 
-# === Helpers ===
+
 def _is_teacher(user):
     return getattr(user, "role", None) == "teacher" or user.is_staff or user.is_superuser
 
@@ -27,7 +27,7 @@ def _parse_date(s):
     except Exception:
         return None
 
-# === Views ===
+
 @login_required
 def attendance_take_C(request):
     user = request.user

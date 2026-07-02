@@ -12,13 +12,12 @@
     <h2>Attendance</h2>
   </div>
 
-  <!-- Filters -->
   <form method="get" class="filter-card">
     <div class="row g-2 align-items-end">
 
       <div class="col-md-3 col-sm-6">
         <label class="form-label" >Search Student</label>
-        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="username / name / ID">
+        <input type="text" name="q" value="{{ q }}" placeholder="username / name / ID">
       </div>
 
       <div class="col-md-2 col-sm-6">
@@ -97,14 +96,15 @@
       </div>
 
       <div class="col-auto d-flex gap-2 align-items-end">
-        <button class="btn-filter-apply" type="submit">Apply</button>
+        <button class="btn btn-danger" type="submit">Apply</button>
         <a class="btn-filter-clear" href="{% url 'attendance_list' %}">Clear</a>
       </div>
 
     </div>
+  
   </form>
 
-  <!-- Table -->
+
   <div class="dir-card">
     <div class="dir-card-header">
       <strong>Attendance Records</strong>

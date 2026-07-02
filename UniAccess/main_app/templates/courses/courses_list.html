@@ -78,7 +78,16 @@
                 {% if user.role == "admin" or user.is_superuser %}
                 <td class="d-flex gap-2">
                   <a href="{% url 'course_edit' c.id %}" class="btn btn-outline-danger btn-sm">Edit</a>
-                  <a href="{% url 'course_delete' c.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
+                  
+                  <form method="post"
+                  action="{% url 'course_delete' c.id %}"
+                  class="d-inline"
+                  onsubmit="return confirm('Are you sure you want to delete {{ c.name }}?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-danger btn-sm">
+                    Delete
+                  </button>
+                </form>
                 </td>
                 {% endif %}
               </tr>

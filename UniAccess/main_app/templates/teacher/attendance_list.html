@@ -37,7 +37,7 @@
     <input type="hidden" name="date" value="{{ session_date|date:'Y-m-d' }}">
     <div class="col-auto">
       <label class="form-label">Search</label>
-      <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="student / code / course name" />
+      <input type="text" name="q" value="{{ q }}" placeholder="student / code / course name" />
     </div>
     <div class="col-auto">
       <label class="form-label">Status</label>
@@ -61,11 +61,11 @@
     </div>
     <div class="col-auto">
       <label class="form-label">From</label>
-      <input type="date" name="start" value="{{ start }}" class="form-control" />
+      <input type="date" name="start" value="{{ start }}"/>
     </div>
     <div class="col-auto">
       <label class="form-label">To</label>
-      <input type="date" name="end" value="{{ end }}" class="form-control" />
+      <input type="date" name="end" value="{{ end }}"/>
     </div>
     <div class="col-auto">
       <label class="form-label">Sort</label>

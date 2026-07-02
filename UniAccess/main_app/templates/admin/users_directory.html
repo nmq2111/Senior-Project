@@ -14,17 +14,16 @@
   <div class="page-header">
     <h2>Users Directory</h2>
     <div class="page-actions">
-      <a href="{% url 'admin_create_student' %}" class="btn-create-student">&#43; New Student</a>
-      <a href="{% url 'create_staff' %}" class="btn-create-staff">&#43; New Staff</a>
+      <a href="{% url 'admin_create_student' %}" class="btn btn-danger">&#43; New Student</a>
+      <a href="{% url 'create_staff' %}" class="btn btn-danger">&#43; New Staff</a>
     </div>
   </div>
 
-  <!-- Filters -->
   <form method="get" class="filter-card">
     <div class="row g-2 align-items-end">
       <div class="col-md-4">
         <label class="form-label">Search</label>
-        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="username / name / email / ID">
+        <input type="text" name="q" value="{{ q }}" placeholder="username / name / email / ID">
       </div>
       <div class="col-md-3">
         <label class="form-label">College</label>
@@ -50,7 +49,6 @@
     </div>
   </form>
 
-  <!-- Students Table -->
   <div class="dir-card">
     <div class="dir-card-header">
       <strong>Students</strong>
@@ -108,7 +106,6 @@
   </div>
 
 <hr/>
-  <!-- Staff Table -->
   <div class="dir-card">
     <div class="dir-card-header">
       <strong>Staff</strong>

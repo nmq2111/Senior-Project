@@ -22,7 +22,7 @@
         <div class="row g-3 mb-4">
           {% for field in form.visible_fields %}
           <div class="col-md-6">
-            <div class="field-group">
+            <div class="form-group">
               <label for="{{ field.id_for_label }}">{{ field.label }}</label>
               {{ field }} {% if field.help_text %}
               <div class="form-text">{{ field.help_text }}</div>
@@ -35,30 +35,14 @@
         </div>
 
         <div class="d-flex gap-3 align-items-center">
-          <button type="submit" class="btn-save">Save Changes</button>
-          <a href="{% url 'users_directory' %}" class="btn-back">Cancel</a>
+          <button type="submit" class="btn btn-danger">Save Changes</button>
+          <a href="{% url 'users_directory' %}" class="btn btn-outline-danger"
+            >Cancel</a
+          >
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Danger Zone -->
-  <div class="danger-card">
-    <div class="danger-info">
-      <h6>Delete Account</h6>
-      <p>
-        Permanently remove this user and all associated data. Tip: deactivate
-        instead to preserve records.
-      </p>
-    </div>
-    <form
-      method="post"
-      action="{% url 'admin_user_delete' user_obj.id %}"
-      onsubmit="return confirm('Delete {{ user_obj.username }}? This cannot be undone.');"
-    >
-      {% csrf_token %}
-      <button class="btn-danger-delete" type="submit">Delete User</button>
-    </form>
-  </div>
+  {% endblock %}
 </div>
-{% endblock %}

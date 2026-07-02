@@ -14,7 +14,7 @@ from django.views.decorators.http import require_http_methods
 
 User = get_user_model()
 
-# === Helpers ===
+
 def _student_year_options():
     years = (
         User.objects.filter(role="student")
@@ -29,7 +29,6 @@ def _parse_date(s):
         return None
 
 
-# === Views ===
 @staff_member_required
 def users_directory(request):
     q = (request.GET.get("q") or "").strip()
@@ -101,7 +100,7 @@ def admin_user_delete(request, user_id):
     u = get_object_or_404(User, pk=user_id)
     if request.method == "POST":
         username = u.username
-        u.delete()  # NOTE: this permanently deletes. If you prefer, set is_active=False instead.
+        u.delete()
         messages.success(request, f"User '{username}' deleted.")
         return redirect("users_directory")
     return render(request, "admin/user_confirm_delete.html", {"user_obj": u})

@@ -81,11 +81,30 @@
 
   <div class="course-buttons">
     <a href="{% url 'courseInfo_list' %}" class="btn-gray">← Back</a>
+
     {% if user.role == "admin" or user.is_superuser %}
-    <a href="{% url 'courseInfo_edit' course.pk %}" class="btn-red">Edit</a>
-    <a href="{% url 'courseInfo_delete' course.pk %}" class="btn-danger"
-      >Delete</a
+    <a href="{% url 'courseInfo_edit' course.pk %}" class="btn btn-danger">
+      Edit
+    </a>
+
+    <form
+      method="post"
+      action="{% url 'courseInfo_delete' course.pk %}"
+      class="d-inline"
     >
+      {% csrf_token %}
+      <a
+        href="#"
+        class="btn btn-danger"
+        onclick="
+          if (confirm('Are you sure you want to delete this course section?'))
+            this.closest('form').submit()
+          return false
+        "
+      >
+        Delete
+      </a>
+    </form>
     {% endif %}
   </div>
 </div>

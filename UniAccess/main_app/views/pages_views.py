@@ -21,7 +21,7 @@ from ..models import (
 
 User = get_user_model()
 
-# === Helpers ===
+
 def _today_range():
     now = timezone.localtime()
     start = now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -59,7 +59,6 @@ def _parse_date(s):
         return None
 
 
-# === Views ===
 def home(request):
     return render(request, "home.html")
 
@@ -83,7 +82,6 @@ def edit_profile(request):
 
 
 def admin_dashboard(request):
-    # 1. Capture the dates from user dropdown input or fallback to local today
     date_str = request.GET.get('date')
     time_str = request.GET.get('time')
     
@@ -105,16 +103,14 @@ def admin_dashboard(request):
     else:
         selected_time = local_now.time()
 
-    # 2. Base Model Queries 
     students = CustomUser.objects.filter(role='student')
     teachers = CustomUser.objects.filter(role='teacher')
     sections = CourseInfo.objects.filter(year=selected_date.year)
     
-    # 3. Dynamic Filtering Calculations based on parameters
+
     scans_on_date = RfidScan.objects.filter(created_at__date=selected_date)
     attendance_on_date = Attendance.objects.filter(session_date=selected_date)
     
-    # Attendance Pie Data Calculations
     present_cnt = attendance_on_date.filter(status='PRESENT').count()
     late_cnt = attendance_on_date.filter(status='LATE').count()
     absent_cnt = attendance_on_date.filter(status='ABSENT').count()
@@ -124,15 +120,13 @@ def admin_dashboard(request):
         "data": [present_cnt, late_cnt, absent_cnt]
     }
 
-    # Hourly Line Chart Data Calculations
-    hourly_labels = [f"{h:02d}:00" for h in range(7, 18)] # 7 AM to 5 PM shifts
+
+    hourly_labels = [f"{h:02d}:00" for h in range(7, 18)] 
     hourly_counts = []
     for hour in range(7, 18):
         cnt = scans_on_date.filter(created_at__hour=hour).count()
         hourly_counts.append(cnt)
 
-    # Filter Active Sections by Selected Day-of-week and Schedule intersection
-    # python weekday: Monday=0, Tuesday=1... Sunday=6
     weekday_idx = selected_date.weekday()
     day_code = 'uth' if weekday_idx in [6, 1, 3] else ('mw' if weekday_idx in [0, 2] else 'fs')
     
@@ -143,7 +137,7 @@ def admin_dashboard(request):
         end_time__gte=selected_time
     ).select_related('course', 'teacher')
 
-    # 4. Context packaging
+
     counts = {
         "students": students.count(),
         "teachers": teachers.count(),
@@ -164,7 +158,7 @@ def admin_dashboard(request):
         "recent_unknown_scans": scans_on_date.filter(user__isnull=True)[:5],
         "tagless_students": students.filter(rfid_tag__isnull=True)[:5],
         
-        # JSON formatting variables parsed safely into layout scripts
+
         "att_pie_json": att_pie_data,
         "scans_hour_labels_json": hourly_labels,
         "scans_hour_counts_json": hourly_counts,
@@ -174,13 +168,11 @@ def admin_dashboard(request):
     
 @staff_member_required
 def admin_dashboard(request):
-    # 1. Capture GET parameters for filtering or fall back to current time
     date_param = request.GET.get('date')
     time_param = request.GET.get('time')
 
     local_now = timezone.localtime(timezone.now())
     
-    # Parse selected date
     if date_param:
         try:
             selected_date = datetime.strptime(date_param, "%Y-%m-%d").date()
@@ -189,7 +181,7 @@ def admin_dashboard(request):
     else:
         selected_date = local_now.date()
 
-    # Parse selected time
+
     if time_param:
         try:
             selected_time = datetime.strptime(time_param, "%H:%M").time()
@@ -198,11 +190,10 @@ def admin_dashboard(request):
     else:
         selected_time = local_now.time()
 
-    # Define date query boundaries based on selected day (replaces _today_range)
+
     start_date = timezone.make_aware(datetime.combine(selected_date, datetime.min.time()))
     end_date = start_date + timedelta(days=1)
 
-    # 2. Compute KPIs
     counts = {
         "students": User.objects.filter(role="student").count(),
         "teachers": User.objects.filter(role="teacher").count(),
@@ -219,11 +210,9 @@ def admin_dashboard(request):
         ).count(),
     }
 
-    # 3. Handle Attendance Aggregations Safely
     att_records = Attendance.objects.filter(session_date=selected_date)
     status_counts = att_records.values('status').annotate(total=Count('id'))
-    
-    # Initialize standard dictionary values
+
     by_status = {"PRESENT": 0, "LATE": 0, "ABSENT": 0}
     for item in status_counts:
         by_status[item['status']] = item['total']
@@ -233,13 +222,12 @@ def admin_dashboard(request):
         "data": [by_status["PRESENT"], by_status["LATE"], by_status["ABSENT"]]
     }
 
-    # 4. Filter Active Sections at Selected Time & Day
-    # Convert weekday index to your model choices pattern if needed
-    weekday_idx = selected_date.weekday() # 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
+ 
+    weekday_idx = selected_date.weekday()
     
-    if weekday_idx in [6, 1, 3]:  # UTH
+    if weekday_idx in [6, 1, 3]: 
         day_query = "uth"
-    elif weekday_idx in [0, 2]:    # MW
+    elif weekday_idx in [0, 2]: 
         day_query = "mw"
     else:
         day_query = "fs"
@@ -256,7 +244,7 @@ def admin_dashboard(request):
         .order_by("course__code", "class_name")[:8]
     )
 
-    # 5. Hourly Line Chart Generation
+
     scans_by_hour_qs = (
         RfidScan.objects
         .filter(created_at__gte=start_date, created_at__lt=end_date)
@@ -267,7 +255,7 @@ def admin_dashboard(request):
     scans_hour_labels = list(range(24))
     scans_hour_counts = [scans_map.get(h, 0) for h in scans_hour_labels]
 
-    # 6. Fetch Table Rows
+
     recent_unknown_scans = (
         RfidScan.objects.filter(created_at__gte=start_date, created_at__lt=end_date, user__isnull=True)
         .order_by("-created_at")
