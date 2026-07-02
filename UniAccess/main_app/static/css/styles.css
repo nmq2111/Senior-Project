@@ -1,12 +1,4 @@
-/* =========================================================
-   UNIACCESS — GLOBAL STYLE SYSTEM
-========================================================= */
-
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
-
-/* =========================================================
-   RESET
-========================================================= */
 
 *,
 *::before,
@@ -31,10 +23,6 @@ body {
   min-height: 100vh;
   padding: 28px;
 }
-
-/* =========================================================
-   ROOT VARIABLES
-========================================================= */
 
 :root {
   --primary: #e30613;
@@ -70,10 +58,6 @@ body {
 
   --transition: 0.25s ease;
 }
-
-/* =========================================================
-   SIDEBAR
-========================================================= */
 
 .sidebar {
   width: 260px;
@@ -136,10 +120,6 @@ body {
   margin-top: auto;
 }
 
-/* =========================================================
-   MAIN CONTENT
-========================================================= */
-
 .main-content {
   margin-left: 260px;
   width: calc(100% - 260px);
@@ -148,10 +128,6 @@ body {
 
   padding: 35px;
 }
-
-/* =========================================================
-   PAGE HEADER
-========================================================= */
 
 .page-header {
   display: flex;
@@ -195,24 +171,17 @@ body {
 .home-page h3:not(.primary),
 .home-page p:not(.primary),
 .home-page p.black {
-  color: #000000 !important; /* Force black rule */
+  color: #000000 !important;
 }
-/* =========================================================
-   GLASS CARDS
-========================================================= */
 
 .glass-card,
 .profile-card-modern,
 .login-card,
-.dashboard-card,
 .feature-card,
 .stat-box,
 .form-glass,
 .dir-card,
-.att-card,
-.ctrl-card,
 .edit-card,
-.delete-card,
 .filter-card {
   background: rgba(255, 255, 255, 0.05);
 
@@ -232,13 +201,9 @@ body {
 
 .glass-card::before,
 .profile-card-modern::before,
-.dashboard-card::before,
 .form-glass::before,
 .dir-card::before,
-.att-card::before,
-.ctrl-card::before,
-.edit-card::before,
-.delete-card::before {
+.edit-card::before {
   content: '';
 
   position: absolute;
@@ -262,9 +227,6 @@ body {
   color: #000000 !important;
 }
 
-/* ========================================================
-Home
-======================================================== */
 .home-page,
 .home-page p,
 .home-page * {
@@ -276,7 +238,6 @@ Home
   font-family: 'Poppins', sans-serif;
 }
 
-/* 3. Hero Layout Configuration & Centering */
 .hero-section {
   margin-bottom: 3.5rem;
 }
@@ -321,14 +282,12 @@ Home
   object-fit: contain;
 }
 
-/* 4. Features CSS Grid - Locked to exactly 4 items per row */
 .section-title {
   margin-bottom: 2.5rem;
 }
 
 .features-grid {
   display: grid;
-  /* Forces 4 equal columns on large screens */
   grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
   margin-bottom: 3.5rem;
@@ -357,7 +316,6 @@ Home
   margin-bottom: 1rem;
 }
 
-/* 5. Stats Grid Layout */
 .stats-wrapper {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -384,29 +342,20 @@ Home
   margin: 0;
 }
 
-/* Responsive backup: adapt layout beautifully on tablets and mobile phones */
 @media (max-width: 1024px) {
   .features-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2x2 grid on small screens */
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 600px) {
   .features-grid {
-    grid-template-columns: 1fr; /* Full width row stack on mobile phones */
+    grid-template-columns: 1fr;
   }
 }
 
-/* =========================================================
-   CARD HEADERS
-========================================================= */
-
 .form-glass-header,
-.dir-card-header,
-.att-card-header,
-.ctrl-card-header,
-.edit-card-header,
-.delete-card-header {
+.edit-card-header {
   background: linear-gradient(135deg, #dc3544, #dc3544);
 
   padding: 22px 28px;
@@ -422,10 +371,6 @@ Home
 }
 
 .form-glass-header h4,
-.delete-card-header h4,
-.dir-card-header strong,
-.att-card-header strong,
-.ctrl-card-header strong,
 .edit-card-header strong {
   margin: 0;
 
@@ -434,20 +379,11 @@ Home
   font-size: 1.05rem;
   font-weight: 700;
 }
-/* =========================================================
-   CARD BODIES
-========================================================= */
 
 .form-glass-body,
-.edit-card-body,
-.ctrl-card-body,
-.delete-card-body {
+.edit-card-body {
   padding: 30px;
 }
-
-/* =========================================================
-   FORMS
-========================================================= */
 
 .field-group {
   display: flex;
@@ -523,18 +459,6 @@ textarea {
   margin-top: 4px;
 }
 
-.section-label {
-  font-size: 11px;
-  font-weight: 700;
-
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-
-  color: rgba(255, 255, 255, 0.35);
-
-  margin-bottom: 18px;
-}
-
 .form-page-wrap,
 .form-page-wrap *,
 .form-page-wrap input,
@@ -556,10 +480,6 @@ textarea {
   border-color: #dc3545 !important;
   box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
 }
-
-/* =========================================================
-   FILTER CARD
-========================================================= */
 
 .filter-card {
   padding: 24px;
@@ -588,15 +508,7 @@ textarea {
   box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
 }
 
-/* =========================================================
-   BUTTON SYSTEM
-========================================================= */
-
-.btn-primary,
-.btn-save,
 .btn-filter-apply,
-.btn-create-student,
-.btn-confirm-delete,
 .profile-save-btn {
   background: var(--gradient);
 
@@ -625,11 +537,7 @@ textarea {
   transition: var(--transition);
 }
 
-.btn-primary:hover,
-.btn-save:hover,
 .btn-filter-apply:hover,
-.btn-create-student:hover,
-.btn-confirm-delete:hover,
 .profile-save-btn:hover {
   transform: translateY(-2px);
 
@@ -637,10 +545,6 @@ textarea {
 }
 
 .btn-secondary,
-.btn-back,
-.btn-cancel,
-.btn-edit,
-.btn-create-staff,
 .btn-refresh,
 .btn-filter-clear {
   background: rgba(255, 255, 255, 0.06);
@@ -670,10 +574,6 @@ textarea {
 }
 
 .btn-secondary:hover,
-.btn-back:hover,
-.btn-cancel:hover,
-.btn-edit:hover,
-.btn-create-staff:hover,
 .btn-refresh:hover,
 .btn-filter-clear:hover {
   background: rgba(255, 255, 255, 0.1);
@@ -683,8 +583,6 @@ textarea {
   transform: translateY(-2px);
 }
 
-/* ------------------------------------------------------------------------------------------------------------------------------------ */
-btn-edit,
 d-inline {
   background: var(--gradient);
 
@@ -713,32 +611,18 @@ d-inline {
   transition: var(--transition);
 }
 
-/* =========================================================
-   TABLES
-========================================================= */
-
-.table-wrap {
-  overflow-x: auto;
-}
-
-.dir-table,
-.att-table,
-.dashboard-table {
+.dir-table {
   width: 100%;
   border-collapse: collapse;
 
   color: white;
 }
 
-.dir-table thead,
-.att-table thead,
-.dashboard-table thead {
+.dir-table thead {
   background: rgba(255, 255, 255, 0.03);
 }
 
-.dir-table th,
-.att-table th,
-.dashboard-table th {
+.dir-table th {
   padding: 14px 18px;
 
   color: rgba(255, 255, 255, 0.45);
@@ -754,9 +638,7 @@ d-inline {
   white-space: nowrap;
 }
 
-.dir-table td,
-.att-table td,
-.dashboard-table td {
+.dir-table td {
   padding: 15px 18px;
 
   color: rgba(255, 255, 255, 0.85);
@@ -766,15 +648,11 @@ d-inline {
   vertical-align: middle;
 }
 
-.dir-table tbody tr:hover,
-.att-table tbody tr:hover,
-.dashboard-table tbody tr:hover {
+.dir-table tbody tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
 
-.dir-table code,
-.att-table code,
-.dashboard-table code {
+.dir-table code {
   background: rgba(255, 255, 255, 0.08);
 
   color: #ff7b84;
@@ -786,15 +664,10 @@ d-inline {
   font-size: 12px;
 }
 
-/* =========================================================
-   BADGES
-========================================================= */
-
 .role-badge,
 .count-pill,
 .username-pill,
-.total-pill,
-.custom-badge {
+.total-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -852,10 +725,6 @@ d-inline {
   font-weight: 700;
 }
 
-/* =========================================================
-   LOGIN
-========================================================= */
-
 .login-container {
   min-height: 85vh;
 
@@ -872,10 +741,6 @@ d-inline {
 
   padding: 40px;
 }
-
-/* =========================================================
-   PROFILE
-========================================================= */
 
 .profile-page {
   width: 100%;
@@ -982,7 +847,7 @@ d-inline {
 .form-group input,
 .form-group select,
 .form-group textarea {
-  border: 2px solid #dc3545 !important; /* Brand Red Border */
+  border: 2px solid #dc3545 !important;
   width: 100% !important;
   padding: 10px 14px !important;
   font-size: 14px !important;
@@ -991,7 +856,6 @@ d-inline {
   color: #000000 !important;
 }
 
-/* 3. Simple Avatar File Upload Button Setup */
 .avatar-upload-wrapper {
   display: block;
   width: 100%;
@@ -1003,7 +867,7 @@ d-inline {
   gap: 8px;
   background-color: #ffffff !important;
   color: #dc3545 !important;
-  border: 2px solid #dc3545 !important; /* Simple clean red outline border */
+  border: 2px solid #dc3545 !important;
   padding: 10px 20px;
   font-size: 14px;
   font-weight: 500;
@@ -1022,7 +886,6 @@ d-inline {
   color: #dc3545 !important;
 }
 
-/* 4. Main Profile Submit Button */
 .profile-save-btn {
   background-color: #dc3545 !important;
   color: #ffffff !important;
@@ -1047,7 +910,6 @@ hr {
   margin: 2rem 0 1.5rem 0;
 }
 
-/* Responsive breakdown for smartphones */
 @media (max-width: 600px) {
   .profile-grid {
     grid-template-columns: 1fr;
@@ -1056,9 +918,6 @@ hr {
     grid-column: span 1;
   }
 }
-/* =========================================================
-   HERO SECTION
-========================================================= */
 
 .hero-section {
   min-height: 100vh;
@@ -1107,10 +966,6 @@ hr {
   margin-bottom: 30px;
 }
 
-/* =========================================================
-   FOOTER
-========================================================= */
-
 footer {
   margin-top: 40px;
 
@@ -1122,10 +977,6 @@ footer {
 
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
-
-/* =========================================================
-   SCROLLBAR
-========================================================= */
 
 ::-webkit-scrollbar {
   width: 10px;
@@ -1140,10 +991,6 @@ footer {
   background: var(--gradient);
   border-radius: 999px;
 }
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
 
 @media (max-width: 992px) {
   .sidebar {
@@ -1199,9 +1046,7 @@ footer {
   }
 
   .form-glass-body,
-  .edit-card-body,
-  .ctrl-card-body,
-  .delete-card-body {
+  .edit-card-body {
     padding: 22px;
   }
 
@@ -1209,9 +1054,7 @@ footer {
     padding: 30px 20px;
   }
 
-  .dir-table,
-  .att-table,
-  .dashboard-table {
+  .dir-table {
     min-width: 760px;
   }
 
@@ -1261,10 +1104,6 @@ footer {
   box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
 }
 
-/* =========================================
-   LOGIN PAGE
-========================================= */
-
 .login-container {
   min-height: 100vh;
   width: 100%;
@@ -1274,10 +1113,6 @@ footer {
 
   padding: 40px 20px;
 }
-
-/* =========================================
-   LOGIN CARD
-========================================= */
 
 .login-card {
   width: 100%;
@@ -1299,7 +1134,6 @@ footer {
   overflow: hidden;
 }
 
-/* Top Accent */
 .login-card::before {
   content: '';
 
@@ -1313,10 +1147,6 @@ footer {
   background: linear-gradient(90deg, #e30613, #ff4d5a);
 }
 
-/* =========================================
-   TITLE
-========================================= */
-
 .login-card h4 {
   text-align: center;
 
@@ -1327,10 +1157,6 @@ footer {
 
   margin-bottom: 30px;
 }
-
-/* =========================================
-   ALERT
-========================================= */
 
 .login-card .alert {
   border: none;
@@ -1347,10 +1173,6 @@ footer {
   color: #b1000f;
 }
 
-/* =========================================
-   LABELS
-========================================= */
-
 .login-card label {
   display: block;
 
@@ -1361,10 +1183,6 @@ footer {
 
   margin-bottom: 8px;
 }
-
-/* =========================================
-   INPUTS
-========================================= */
 
 .login-card .form-control {
   width: 100%;
@@ -1399,10 +1217,6 @@ footer {
   outline: none;
 }
 
-/* =========================================
-   REMEMBER + FORGOT
-========================================= */
-
 .login-card a {
   text-decoration: none;
 
@@ -1418,55 +1232,9 @@ footer {
   color: #b1000f;
 }
 
-/* =========================================
-   LOGIN BUTTON
-========================================= */
-
-.btn-login {
-  width: 100%;
-  height: 56px;
-
-  border: none;
-  border-radius: 16px;
-
-  margin-top: 10px;
-
-  background: linear-gradient(135deg, #e30613, #ff4d5a);
-
-  color: #ffffff;
-
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-
-  cursor: pointer;
-
-  transition: all 0.25s ease;
-
-  box-shadow: 0 8px 20px rgba(227, 6, 19, 0.25);
-}
-
-.btn-login:hover {
-  transform: translateY(-2px);
-
-  box-shadow: 0 12px 28px rgba(227, 6, 19, 0.35);
-}
-
-.btn-login:active {
-  transform: scale(0.99);
-}
-
-/* =========================================
-   SPACING
-========================================= */
-
 .login-card .mb-3 {
   margin-bottom: 22px !important;
 }
-
-/* =========================================
-   MOBILE
-========================================= */
 
 @media (max-width: 576px) {
   .login-container {
@@ -1482,8 +1250,7 @@ footer {
     font-size: 1.7rem;
   }
 
-  .login-card .form-control,
-  .btn-login {
+  .login-card .form-control {
     height: 52px;
   }
 
@@ -1493,10 +1260,6 @@ footer {
     gap: 12px;
   }
 }
-
-/* =========================================
-   COURSE DETAIL PAGE
-========================================= */
 
 .course-detail-wrapper {
   max-width: 1100px;
@@ -1521,10 +1284,6 @@ footer {
   border-bottom: 2px solid rgba(227, 6, 19, 0.15);
   padding-bottom: 1rem;
 }
-
-/* =========================================
-   DETAIL GRID
-========================================= */
 
 .course-detail-card p {
   margin: 0;
@@ -1558,10 +1317,6 @@ footer {
   transition: 0.25s ease;
   background: #fff5f5;
 }
-
-/* =========================================
-   BUTTONS
-========================================= */
 
 .course-buttons {
   display: flex;
@@ -1623,9 +1378,6 @@ footer {
   display: block;
   font-size: 0.95rem;
 }
-/* =========================================
-   MOBILE
-========================================= */
 
 @media (max-width: 768px) {
   .course-detail-card {

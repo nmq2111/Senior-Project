@@ -174,32 +174,30 @@ class AdminUserEditForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         u = self.instance
-        # Pre-fill phone
+
         if hasattr(u, "profile"):
             self.fields["phone"].initial = u.profile.phone
-        # Pre-fill tag UID
         if hasattr(u, "rfid_tag") and u.rfid_tag:
             self.fields["tag_uid"].initial = u.rfid_tag.tag_uid
 
     def save(self, commit=True):
         user = super().save(commit=commit)
 
-        # Profile phone
+
         phone = (self.cleaned_data.get("phone") or "").strip()
         Profile.objects.update_or_create(user=user, defaults={"phone": phone})
 
-        # RFID tag assign/unassign
+
         tag_uid = (self.cleaned_data.get("tag_uid") or "").strip()
         current_tag = getattr(user, "rfid_tag", None)
 
         if tag_uid:
             tag, _ = RFIDTag.objects.get_or_create(tag_uid=tag_uid)
-            # Reassign if linked to someone else
+
             if tag.assigned_to != user:
                 tag.assigned_to = user
                 tag.save(update_fields=["assigned_to"])
         else:
-            # Clear existing tag if admin wiped the field
             if current_tag:
                 current_tag.assigned_to = None
                 current_tag.save(update_fields=["assigned_to"])

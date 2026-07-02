@@ -200,7 +200,7 @@ class RfidScan(models.Model):
     )
     device_id = models.CharField(max_length=64, blank=True, null=True)
     source_ip = models.GenericIPAddressField(blank=True, null=True)
-    status = models.CharField(max_length=10, default="SCAN")  # IN / OUT / SCAN
+    status = models.CharField(max_length=10, default="SCAN")
     success = models.BooleanField(default=False)
     note = models.TextField(blank=True, null=True)
     extra = models.JSONField(blank=True, null=True)

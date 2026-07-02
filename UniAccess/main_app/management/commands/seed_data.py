@@ -16,7 +16,7 @@ from main_app.models import (
     Profile,
 )
 
-fake = Faker() # Default locale for emails, bio, etc.
+fake = Faker()
 
 class Command(BaseCommand):
     help = "Seed realistic fake data into PostgreSQL database"
@@ -36,9 +36,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Old data deleted."))
 
-        # ---------------------------------------------------
-        # CUSTOM REALISTIC LOCAL NAME BANKS
-        # ---------------------------------------------------
+
         FIRST_NAMES_MALE = [
             "Ahmed", "Mohammed", "Abdullah", "Yousef", "Khalid", "Ali", "Hassan", "Hussein", 
             "Omar", "Faisal", "Salman", "Mahmood", "Saeed", "Nasser", "Ibrahim", "Tariq", 
@@ -61,9 +59,6 @@ class Command(BaseCommand):
             last = random.choice(LAST_NAMES)
             return first, last
 
-        # ---------------------------------------------------
-        # CREATE TEACHERS
-        # ---------------------------------------------------
         teachers = []
         for i in range(15):
             first, last = get_random_name()
@@ -91,9 +86,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"{len(teachers)} Teachers created."))
 
-        # ---------------------------------------------------
-        # CREATE STUDENTS
-        # ---------------------------------------------------
+
         students = []
         for i in range(120):
             first, last = get_random_name()
@@ -118,22 +111,18 @@ class Command(BaseCommand):
                 phone=f"+973{random.randint(36000000, 39999999)}",
             )
             tag = RFIDTag.objects.create(
-                tag_uid=f"HEX-{random.randint(100000, 999999):X}", # Hex formatting makes it look like a real RFID UID
+                tag_uid=f"HEX-{random.randint(100000, 999999):X}",
                 assigned_to=student,
             )
             students.append((student, tag))
 
         self.stdout.write(self.style.SUCCESS(f"{len(students)} Students created."))
 
-        # ---------------------------------------------------
-        # CREATE COURSE SECTIONS (WITH TIME SLOTS)
-        # ---------------------------------------------------
         courses = Course.objects.all()
         if not courses.exists():
             self.stdout.write(self.style.ERROR("No courses found in database! Please add some courses first."))
             return
 
-        # Realistic time slots dictionary
         TIME_SLOTS = {
             'lecture': [
                 (time(8, 0), time(8, 50)),
@@ -153,7 +142,6 @@ class Command(BaseCommand):
 
         sections = []
         for course in courses:
-            # Generate 1 to 2 sections per course to spread out options
             for loop_sec in range(random.randint(1, 2)):
                 session_type = random.choice(["lecture", "lab"])
                 chosen_slot = random.choice(TIME_SLOTS[session_type])
@@ -181,12 +169,9 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"{len(sections)} Course sections created."))
 
-        # ---------------------------------------------------
-        # ENROLLMENTS (WITHOUT TIME CONFLICTS)
-        # ---------------------------------------------------
+
         enrollments = []
         for student, tag in students:
-            # Try to sign up for 4 classes, ensuring no time/day slot overlaps
             chosen_sections = []
             available_sections = list(sections)
             random.shuffle(available_sections)
@@ -194,12 +179,10 @@ class Command(BaseCommand):
             for sec in available_sections:
                 if len(chosen_sections) >= random.randint(3, 5):
                     break
-                
-                # Conflict checking logic
+
                 has_conflict = False
                 for chosen in chosen_sections:
                     if chosen.days == sec.days:
-                        # Overlap equation: (StartA < EndB) and (EndA > StartB)
                         if (sec.start_time < chosen.end_time) and (sec.end_time > chosen.start_time):
                             has_conflict = True
                             break
@@ -218,13 +201,11 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"{len(enrollments)} Enrollments processed."))
 
-        # ---------------------------------------------------
-        # REALISTIC ATTENDANCE + SYSTEM RFID SCANS
-        # ---------------------------------------------------
+
   
         days_mapping = {
-            'mw': [0, 2],       # Mon, Wed
-            'uth': [6, 1, 3],   # Sun, Tue, Thu
+            'mw': [0, 2],  
+            'uth': [6, 1, 3],   
         }
 
         today = timezone.localdate()
@@ -237,16 +218,12 @@ class Command(BaseCommand):
             section = enrollment.course_info
             valid_weekdays = days_mapping.get(section.days, [])
 
-            # Check previous 10 days to find valid session matches
             for days_back in range(10):
                 session_date = today - timedelta(days=days_back)
-                
-                # Check if this course actually runs on this specific weekday
+
                 if session_date.weekday() not in valid_weekdays:
                     continue
 
-                # Determine a realistic student status
-                # 85% chance Present, 5% Late, 10% Absent
                 attendance_roll = random.random()
                 if attendance_roll < 0.85:
                     status = "PRESENT"
@@ -255,21 +232,19 @@ class Command(BaseCommand):
                 else:
                     status = "ABSENT"
 
-                # Combine the target schedule date with target schedule times
+
                 class_start_dt = datetime.combine(session_date, section.start_time)
                 class_end_dt = datetime.combine(session_date, section.end_time)
 
                 if status == "PRESENT":
-                    # Arrives 10 to 2 minutes BEFORE class starts
                     arrival = class_start_dt - timedelta(minutes=random.randint(2, 10))
-                    # Departs 0 to 5 minutes AFTER class ends
+
                     departure = class_end_dt + timedelta(minutes=random.randint(0, 5))
                 elif status == "LATE":
-                    # Arrives 5 to 20 minutes AFTER class starts
+
                     arrival = class_start_dt + timedelta(minutes=random.randint(5, 20))
                     departure = class_end_dt + timedelta(minutes=random.randint(0, 5))
-                else: # ABSENT
-                    # No scans, but an explicit ABSENT row is tracked by the school system
+                else: 
                     attendance = Attendance.objects.create(
                         student=enrollment.student,
                         course_info=section,
@@ -281,11 +256,9 @@ class Command(BaseCommand):
                     )
                     continue
 
-                # Make times timezone aware for Django
                 arrival_aware = timezone.make_aware(arrival)
                 departure_aware = timezone.make_aware(departure)
 
-                # Generate the physical system log scans
                 scan_in = RfidScan.objects.create(
                     uid=tag.tag_uid,
                     user=enrollment.student,
@@ -310,7 +283,6 @@ class Command(BaseCommand):
                 scan_out.created_at = departure_aware
                 scan_out.save()
 
-                # Generate matching finalized attendance record
                 attendance = Attendance.objects.create(
                     student=enrollment.student,
                     course_info=section,
@@ -322,7 +294,6 @@ class Command(BaseCommand):
                 )
                 attendance.scans.add(scan_in, scan_out)
 
-        # Update warnings dynamically based on the newly computed fake histories
         for student, _ in students:
             for enroll in Enrollment.objects.filter(student=student):
                 absences = Attendance.objects.filter(student=student, course_info=enroll.course_info, status="ABSENT").count()
